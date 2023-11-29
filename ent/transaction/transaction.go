@@ -3,6 +3,8 @@
 package transaction
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -11,6 +13,12 @@ const (
 	Label = "transaction"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldDate holds the string denoting the date field in the database.
+	FieldDate = "date"
+	// FieldAmountInUsd holds the string denoting the amount_in_usd field in the database.
+	FieldAmountInUsd = "amount_in_usd"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// Table holds the table name of the transaction in the database.
 	Table = "transactions"
 )
@@ -18,6 +26,9 @@ const (
 // Columns holds all SQL columns for transaction fields.
 var Columns = []string{
 	FieldID,
+	FieldDate,
+	FieldAmountInUsd,
+	FieldDescription,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -30,10 +41,34 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// DefaultDate holds the default value on creation for the "date" field.
+	DefaultDate func() time.Time
+	// AmountInUsdValidator is a validator for the "amount_in_usd" field. It is called by the builders before save.
+	AmountInUsdValidator func(float64) error
+	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	DescriptionValidator func(string) error
+)
+
 // OrderOption defines the ordering options for the Transaction queries.
 type OrderOption func(*sql.Selector)
 
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByDate orders the results by the date field.
+func ByDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDate, opts...).ToFunc()
+}
+
+// ByAmountInUsd orders the results by the amount_in_usd field.
+func ByAmountInUsd(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAmountInUsd, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }

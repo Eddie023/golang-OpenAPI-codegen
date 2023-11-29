@@ -19,12 +19,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Table:   transaction.Table,
 			Columns: transaction.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: transaction.FieldID,
 			},
 		},
-		Type:   "Transaction",
-		Fields: map[string]*sqlgraph.FieldSpec{},
+		Type: "Transaction",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			transaction.FieldDate:        {Type: field.TypeTime, Column: transaction.FieldDate},
+			transaction.FieldAmountInUsd: {Type: field.TypeFloat64, Column: transaction.FieldAmountInUsd},
+			transaction.FieldDescription: {Type: field.TypeString, Column: transaction.FieldDescription},
+		},
 	}
 	return graph
 }()
@@ -70,7 +74,22 @@ func (f *TransactionFilter) Where(p entql.P) {
 	})
 }
 
-// WhereID applies the entql int predicate on the id field.
-func (f *TransactionFilter) WhereID(p entql.IntP) {
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *TransactionFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(transaction.FieldID))
+}
+
+// WhereDate applies the entql time.Time predicate on the date field.
+func (f *TransactionFilter) WhereDate(p entql.TimeP) {
+	f.Where(p.Field(transaction.FieldDate))
+}
+
+// WhereAmountInUsd applies the entql float64 predicate on the amount_in_usd field.
+func (f *TransactionFilter) WhereAmountInUsd(p entql.Float64P) {
+	f.Where(p.Field(transaction.FieldAmountInUsd))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *TransactionFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(transaction.FieldDescription))
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/eddie023/wex-tag/ent"
+	"github.com/eddie023/wex-tag/pkg/apiout"
 	"github.com/eddie023/wex-tag/pkg/config"
 	"github.com/eddie023/wex-tag/pkg/types"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -35,9 +36,15 @@ func (a *API) Handler() http.Handler {
 
 	// healthcheck handler
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
+		ctx := r.Context()
 
-		// apiout.JSON(ctx, w, out, http.StatusCreated)
+		out := struct {
+			Status string
+		}{
+			Status: "ok",
+		}
+
+		apiout.JSON(ctx, w, out, http.StatusOK)
 	})
 
 	router.Group(func(r chi.Router) {

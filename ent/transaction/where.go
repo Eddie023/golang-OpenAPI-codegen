@@ -3,53 +3,216 @@
 package transaction
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/eddie023/wex-tag/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Transaction {
+func ID(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Transaction {
+func IDEQ(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Transaction {
+func IDNEQ(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Transaction {
+func IDIn(ids ...uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Transaction {
+func IDNotIn(ids ...uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Transaction {
+func IDGT(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Transaction {
+func IDGTE(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Transaction {
+func IDLT(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Transaction {
+func IDLTE(id uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldLTE(FieldID, id))
+}
+
+// Date applies equality check predicate on the "date" field. It's identical to DateEQ.
+func Date(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldDate, v))
+}
+
+// AmountInUsd applies equality check predicate on the "amount_in_usd" field. It's identical to AmountInUsdEQ.
+func AmountInUsd(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldAmountInUsd, v))
+}
+
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldDescription, v))
+}
+
+// DateEQ applies the EQ predicate on the "date" field.
+func DateEQ(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldDate, v))
+}
+
+// DateNEQ applies the NEQ predicate on the "date" field.
+func DateNEQ(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNEQ(FieldDate, v))
+}
+
+// DateIn applies the In predicate on the "date" field.
+func DateIn(vs ...time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldIn(FieldDate, vs...))
+}
+
+// DateNotIn applies the NotIn predicate on the "date" field.
+func DateNotIn(vs ...time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotIn(FieldDate, vs...))
+}
+
+// DateGT applies the GT predicate on the "date" field.
+func DateGT(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGT(FieldDate, v))
+}
+
+// DateGTE applies the GTE predicate on the "date" field.
+func DateGTE(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGTE(FieldDate, v))
+}
+
+// DateLT applies the LT predicate on the "date" field.
+func DateLT(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLT(FieldDate, v))
+}
+
+// DateLTE applies the LTE predicate on the "date" field.
+func DateLTE(v time.Time) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLTE(FieldDate, v))
+}
+
+// AmountInUsdEQ applies the EQ predicate on the "amount_in_usd" field.
+func AmountInUsdEQ(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldAmountInUsd, v))
+}
+
+// AmountInUsdNEQ applies the NEQ predicate on the "amount_in_usd" field.
+func AmountInUsdNEQ(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNEQ(FieldAmountInUsd, v))
+}
+
+// AmountInUsdIn applies the In predicate on the "amount_in_usd" field.
+func AmountInUsdIn(vs ...float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldIn(FieldAmountInUsd, vs...))
+}
+
+// AmountInUsdNotIn applies the NotIn predicate on the "amount_in_usd" field.
+func AmountInUsdNotIn(vs ...float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotIn(FieldAmountInUsd, vs...))
+}
+
+// AmountInUsdGT applies the GT predicate on the "amount_in_usd" field.
+func AmountInUsdGT(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGT(FieldAmountInUsd, v))
+}
+
+// AmountInUsdGTE applies the GTE predicate on the "amount_in_usd" field.
+func AmountInUsdGTE(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGTE(FieldAmountInUsd, v))
+}
+
+// AmountInUsdLT applies the LT predicate on the "amount_in_usd" field.
+func AmountInUsdLT(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLT(FieldAmountInUsd, v))
+}
+
+// AmountInUsdLTE applies the LTE predicate on the "amount_in_usd" field.
+func AmountInUsdLTE(v float64) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLTE(FieldAmountInUsd, v))
+}
+
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Transaction {
+	return predicate.Transaction(sql.FieldContainsFold(FieldDescription, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/eddie023/wex-tag/ent/predicate"
 	"github.com/eddie023/wex-tag/ent/transaction"
+	"github.com/google/uuid"
 )
 
 // TransactionQuery is the builder for querying Transaction entities.
@@ -81,8 +82,8 @@ func (tq *TransactionQuery) FirstX(ctx context.Context) *Transaction {
 
 // FirstID returns the first Transaction ID from the query.
 // Returns a *NotFoundError when no Transaction ID was found.
-func (tq *TransactionQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TransactionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(1).IDs(setContextOp(ctx, tq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (tq *TransactionQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TransactionQuery) FirstIDX(ctx context.Context) int {
+func (tq *TransactionQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +133,8 @@ func (tq *TransactionQuery) OnlyX(ctx context.Context) *Transaction {
 // OnlyID is like Only, but returns the only Transaction ID in the query.
 // Returns a *NotSingularError when more than one Transaction ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TransactionQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TransactionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(2).IDs(setContextOp(ctx, tq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (tq *TransactionQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TransactionQuery) OnlyIDX(ctx context.Context) int {
+func (tq *TransactionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +178,7 @@ func (tq *TransactionQuery) AllX(ctx context.Context) []*Transaction {
 }
 
 // IDs executes the query and returns a list of Transaction IDs.
-func (tq *TransactionQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (tq *TransactionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if tq.ctx.Unique == nil && tq.path != nil {
 		tq.Unique(true)
 	}
@@ -189,7 +190,7 @@ func (tq *TransactionQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TransactionQuery) IDsX(ctx context.Context) []int {
+func (tq *TransactionQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,6 +258,18 @@ func (tq *TransactionQuery) Clone() *TransactionQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Date time.Time `json:"date,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Transaction.Query().
+//		GroupBy(transaction.FieldDate).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (tq *TransactionQuery) GroupBy(field string, fields ...string) *TransactionGroupBy {
 	tq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &TransactionGroupBy{build: tq}
@@ -268,6 +281,16 @@ func (tq *TransactionQuery) GroupBy(field string, fields ...string) *Transaction
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Date time.Time `json:"date,omitempty"`
+//	}
+//
+//	client.Transaction.Query().
+//		Select(transaction.FieldDate).
+//		Scan(ctx, &v)
 func (tq *TransactionQuery) Select(fields ...string) *TransactionSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
 	sbuild := &TransactionSelect{TransactionQuery: tq}
@@ -342,7 +365,7 @@ func (tq *TransactionQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (tq *TransactionQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID))
 	_spec.From = tq.sql
 	if unique := tq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

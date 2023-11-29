@@ -12,7 +12,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	ent "github.com/eddie023/wex-tag/ent"
+	types "github.com/eddie023/wex-tag/pkg/types"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,16 +40,16 @@ func (m *MockTransactionService) EXPECT() *MockTransactionServiceMockRecorder {
 }
 
 // CreatePurchase mocks base method.
-func (m *MockTransactionService) CreatePurchase(arg0 context.Context) (*ent.Transaction, error) {
+func (m *MockTransactionService) CreatePurchase(arg0 context.Context, arg1 types.CreateNewPurchaseTransaction) (types.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePurchase", arg0)
-	ret0, _ := ret[0].(*ent.Transaction)
+	ret := m.ctrl.Call(m, "CreatePurchase", arg0, arg1)
+	ret0, _ := ret[0].(types.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreatePurchase indicates an expected call of CreatePurchase.
-func (mr *MockTransactionServiceMockRecorder) CreatePurchase(arg0 any) *gomock.Call {
+func (mr *MockTransactionServiceMockRecorder) CreatePurchase(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePurchase", reflect.TypeOf((*MockTransactionService)(nil).CreatePurchase), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePurchase", reflect.TypeOf((*MockTransactionService)(nil).CreatePurchase), arg0, arg1)
 }

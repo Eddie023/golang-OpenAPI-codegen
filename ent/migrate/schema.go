@@ -10,7 +10,10 @@ import (
 var (
 	// TransactionsColumns holds the columns for the "transactions" table.
 	TransactionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "date", Type: field.TypeTime},
+		{Name: "amount_in_usd", Type: field.TypeFloat64},
+		{Name: "description", Type: field.TypeString, Size: 50},
 	}
 	// TransactionsTable holds the schema information for the "transactions" table.
 	TransactionsTable = &schema.Table{

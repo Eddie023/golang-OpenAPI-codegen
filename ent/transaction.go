@@ -5,17 +5,25 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/eddie023/wex-tag/ent/transaction"
+	"github.com/google/uuid"
 )
 
 // Transaction is the model entity for the Transaction schema.
 type Transaction struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// Date holds the value of the "date" field.
+	Date time.Time `json:"date,omitempty"`
+	// AmountInUsd holds the value of the "amount_in_usd" field.
+	AmountInUsd float64 `json:"amount_in_usd,omitempty"`
+	// Description holds the value of the "description" field.
+	Description  string `json:"description,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -24,8 +32,14 @@ func (*Transaction) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case transaction.FieldAmountInUsd:
+			values[i] = new(sql.NullFloat64)
+		case transaction.FieldDescription:
+			values[i] = new(sql.NullString)
+		case transaction.FieldDate:
+			values[i] = new(sql.NullTime)
 		case transaction.FieldID:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -42,11 +56,29 @@ func (t *Transaction) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case transaction.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				t.ID = *value
 			}
-			t.ID = int(value.Int64)
+		case transaction.FieldDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field date", values[i])
+			} else if value.Valid {
+				t.Date = value.Time
+			}
+		case transaction.FieldAmountInUsd:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field amount_in_usd", values[i])
+			} else if value.Valid {
+				t.AmountInUsd = value.Float64
+			}
+		case transaction.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				t.Description = value.String
+			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -82,7 +114,15 @@ func (t *Transaction) Unwrap() *Transaction {
 func (t *Transaction) String() string {
 	var builder strings.Builder
 	builder.WriteString("Transaction(")
-	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("date=")
+	builder.WriteString(t.Date.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("amount_in_usd=")
+	builder.WriteString(fmt.Sprintf("%v", t.AmountInUsd))
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(t.Description)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -4,11 +4,14 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/eddie023/wex-tag/ent/transaction"
+	"github.com/google/uuid"
 )
 
 // TransactionCreate is the builder for creating a Transaction entity.
@@ -18,6 +21,38 @@ type TransactionCreate struct {
 	hooks    []Hook
 }
 
+// SetDate sets the "date" field.
+func (tc *TransactionCreate) SetDate(t time.Time) *TransactionCreate {
+	tc.mutation.SetDate(t)
+	return tc
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (tc *TransactionCreate) SetNillableDate(t *time.Time) *TransactionCreate {
+	if t != nil {
+		tc.SetDate(*t)
+	}
+	return tc
+}
+
+// SetAmountInUsd sets the "amount_in_usd" field.
+func (tc *TransactionCreate) SetAmountInUsd(f float64) *TransactionCreate {
+	tc.mutation.SetAmountInUsd(f)
+	return tc
+}
+
+// SetDescription sets the "description" field.
+func (tc *TransactionCreate) SetDescription(s string) *TransactionCreate {
+	tc.mutation.SetDescription(s)
+	return tc
+}
+
+// SetID sets the "id" field.
+func (tc *TransactionCreate) SetID(u uuid.UUID) *TransactionCreate {
+	tc.mutation.SetID(u)
+	return tc
+}
+
 // Mutation returns the TransactionMutation object of the builder.
 func (tc *TransactionCreate) Mutation() *TransactionMutation {
 	return tc.mutation
@@ -25,6 +60,7 @@ func (tc *TransactionCreate) Mutation() *TransactionMutation {
 
 // Save creates the Transaction in the database.
 func (tc *TransactionCreate) Save(ctx context.Context) (*Transaction, error) {
+	tc.defaults()
 	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
 }
 
@@ -50,8 +86,35 @@ func (tc *TransactionCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (tc *TransactionCreate) defaults() {
+	if _, ok := tc.mutation.Date(); !ok {
+		v := transaction.DefaultDate()
+		tc.mutation.SetDate(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (tc *TransactionCreate) check() error {
+	if _, ok := tc.mutation.Date(); !ok {
+		return &ValidationError{Name: "date", err: errors.New(`ent: missing required field "Transaction.date"`)}
+	}
+	if _, ok := tc.mutation.AmountInUsd(); !ok {
+		return &ValidationError{Name: "amount_in_usd", err: errors.New(`ent: missing required field "Transaction.amount_in_usd"`)}
+	}
+	if v, ok := tc.mutation.AmountInUsd(); ok {
+		if err := transaction.AmountInUsdValidator(v); err != nil {
+			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
+		}
+	}
+	if _, ok := tc.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Transaction.description"`)}
+	}
+	if v, ok := tc.mutation.Description(); ok {
+		if err := transaction.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Transaction.description": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -66,8 +129,13 @@ func (tc *TransactionCreate) sqlSave(ctx context.Context) (*Transaction, error) 
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	tc.mutation.id = &_node.ID
 	tc.mutation.done = true
 	return _node, nil
@@ -76,8 +144,24 @@ func (tc *TransactionCreate) sqlSave(ctx context.Context) (*Transaction, error) 
 func (tc *TransactionCreate) createSpec() (*Transaction, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Transaction{config: tc.config}
-		_spec = sqlgraph.NewCreateSpec(transaction.Table, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(transaction.Table, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID))
 	)
+	if id, ok := tc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := tc.mutation.Date(); ok {
+		_spec.SetField(transaction.FieldDate, field.TypeTime, value)
+		_node.Date = value
+	}
+	if value, ok := tc.mutation.AmountInUsd(); ok {
+		_spec.SetField(transaction.FieldAmountInUsd, field.TypeFloat64, value)
+		_node.AmountInUsd = value
+	}
+	if value, ok := tc.mutation.Description(); ok {
+		_spec.SetField(transaction.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
 	return _node, _spec
 }
 
@@ -99,6 +183,7 @@ func (tcb *TransactionCreateBulk) Save(ctx context.Context) ([]*Transaction, err
 	for i := range tcb.builders {
 		func(i int, root context.Context) {
 			builder := tcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TransactionMutation)
 				if !ok {
@@ -125,10 +210,6 @@ func (tcb *TransactionCreateBulk) Save(ctx context.Context) ([]*Transaction, err
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

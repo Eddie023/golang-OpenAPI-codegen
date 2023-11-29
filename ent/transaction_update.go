@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,6 +25,55 @@ type TransactionUpdate struct {
 // Where appends a list predicates to the TransactionUpdate builder.
 func (tu *TransactionUpdate) Where(ps ...predicate.Transaction) *TransactionUpdate {
 	tu.mutation.Where(ps...)
+	return tu
+}
+
+// SetDate sets the "date" field.
+func (tu *TransactionUpdate) SetDate(t time.Time) *TransactionUpdate {
+	tu.mutation.SetDate(t)
+	return tu
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (tu *TransactionUpdate) SetNillableDate(t *time.Time) *TransactionUpdate {
+	if t != nil {
+		tu.SetDate(*t)
+	}
+	return tu
+}
+
+// SetAmountInUsd sets the "amount_in_usd" field.
+func (tu *TransactionUpdate) SetAmountInUsd(f float64) *TransactionUpdate {
+	tu.mutation.ResetAmountInUsd()
+	tu.mutation.SetAmountInUsd(f)
+	return tu
+}
+
+// SetNillableAmountInUsd sets the "amount_in_usd" field if the given value is not nil.
+func (tu *TransactionUpdate) SetNillableAmountInUsd(f *float64) *TransactionUpdate {
+	if f != nil {
+		tu.SetAmountInUsd(*f)
+	}
+	return tu
+}
+
+// AddAmountInUsd adds f to the "amount_in_usd" field.
+func (tu *TransactionUpdate) AddAmountInUsd(f float64) *TransactionUpdate {
+	tu.mutation.AddAmountInUsd(f)
+	return tu
+}
+
+// SetDescription sets the "description" field.
+func (tu *TransactionUpdate) SetDescription(s string) *TransactionUpdate {
+	tu.mutation.SetDescription(s)
+	return tu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tu *TransactionUpdate) SetNillableDescription(s *string) *TransactionUpdate {
+	if s != nil {
+		tu.SetDescription(*s)
+	}
 	return tu
 }
 
@@ -59,14 +109,44 @@ func (tu *TransactionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *TransactionUpdate) check() error {
+	if v, ok := tu.mutation.AmountInUsd(); ok {
+		if err := transaction.AmountInUsdValidator(v); err != nil {
+			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Description(); ok {
+		if err := transaction.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Transaction.description": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (tu *TransactionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeInt))
+	if err := tu.check(); err != nil {
+		return n, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := tu.mutation.Date(); ok {
+		_spec.SetField(transaction.FieldDate, field.TypeTime, value)
+	}
+	if value, ok := tu.mutation.AmountInUsd(); ok {
+		_spec.SetField(transaction.FieldAmountInUsd, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.AddedAmountInUsd(); ok {
+		_spec.AddField(transaction.FieldAmountInUsd, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.Description(); ok {
+		_spec.SetField(transaction.FieldDescription, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -86,6 +166,55 @@ type TransactionUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TransactionMutation
+}
+
+// SetDate sets the "date" field.
+func (tuo *TransactionUpdateOne) SetDate(t time.Time) *TransactionUpdateOne {
+	tuo.mutation.SetDate(t)
+	return tuo
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (tuo *TransactionUpdateOne) SetNillableDate(t *time.Time) *TransactionUpdateOne {
+	if t != nil {
+		tuo.SetDate(*t)
+	}
+	return tuo
+}
+
+// SetAmountInUsd sets the "amount_in_usd" field.
+func (tuo *TransactionUpdateOne) SetAmountInUsd(f float64) *TransactionUpdateOne {
+	tuo.mutation.ResetAmountInUsd()
+	tuo.mutation.SetAmountInUsd(f)
+	return tuo
+}
+
+// SetNillableAmountInUsd sets the "amount_in_usd" field if the given value is not nil.
+func (tuo *TransactionUpdateOne) SetNillableAmountInUsd(f *float64) *TransactionUpdateOne {
+	if f != nil {
+		tuo.SetAmountInUsd(*f)
+	}
+	return tuo
+}
+
+// AddAmountInUsd adds f to the "amount_in_usd" field.
+func (tuo *TransactionUpdateOne) AddAmountInUsd(f float64) *TransactionUpdateOne {
+	tuo.mutation.AddAmountInUsd(f)
+	return tuo
+}
+
+// SetDescription sets the "description" field.
+func (tuo *TransactionUpdateOne) SetDescription(s string) *TransactionUpdateOne {
+	tuo.mutation.SetDescription(s)
+	return tuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tuo *TransactionUpdateOne) SetNillableDescription(s *string) *TransactionUpdateOne {
+	if s != nil {
+		tuo.SetDescription(*s)
+	}
+	return tuo
 }
 
 // Mutation returns the TransactionMutation object of the builder.
@@ -133,8 +262,26 @@ func (tuo *TransactionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tuo *TransactionUpdateOne) check() error {
+	if v, ok := tuo.mutation.AmountInUsd(); ok {
+		if err := transaction.AmountInUsdValidator(v); err != nil {
+			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Description(); ok {
+		if err := transaction.DescriptionValidator(v); err != nil {
+			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Transaction.description": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (tuo *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transaction, err error) {
-	_spec := sqlgraph.NewUpdateSpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeInt))
+	if err := tuo.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(transaction.Table, transaction.Columns, sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID))
 	id, ok := tuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Transaction.id" for update`)}
@@ -158,6 +305,18 @@ func (tuo *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transactio
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := tuo.mutation.Date(); ok {
+		_spec.SetField(transaction.FieldDate, field.TypeTime, value)
+	}
+	if value, ok := tuo.mutation.AmountInUsd(); ok {
+		_spec.SetField(transaction.FieldAmountInUsd, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.AddedAmountInUsd(); ok {
+		_spec.AddField(transaction.FieldAmountInUsd, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.Description(); ok {
+		_spec.SetField(transaction.FieldDescription, field.TypeString, value)
 	}
 	_node = &Transaction{config: tuo.config}
 	_spec.Assign = _node.assignValues
