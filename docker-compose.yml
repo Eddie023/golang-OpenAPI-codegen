@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  database:
+    image: postgres:14.8
+    container_name: wex-tag-db
+    restart: "unless-stopped"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+  
+  pgadmin-console:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "test@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "test123"
+    ports:
+      - "1234:80"
+    depends_on:
+      - database
+      

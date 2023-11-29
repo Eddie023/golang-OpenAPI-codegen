@@ -1,0 +1,140 @@
+openapi: 3.1.0
+x-stoplight:
+  id: cmwdkc2aupa9r
+info:
+  title: wex-tag-transaction
+  version: "1.0"
+  description: "Open API specification for WEX TAG transaction API "
+  contact:
+    email: manish23chaulagain@gmail.com
+    name: eddie023
+servers:
+  - url: "http://localhost:8000"
+paths:
+  /transaction:
+    parameters: []
+    get:
+      summary: Get Purchase Transaction
+      tags: []
+      responses:
+        "200":
+          $ref: "#/components/responses/GetPurchaseTransaction"
+        "404":
+          description: User Not Found
+      operationId: get-purchase-transaction
+      description: |-
+        Based upon purchase transactions previously submitted and stored, retrieve the stored purchase transactions converted to currencies supported by the Treasury Reporting Rates of Exchange API based
+        upon the exchange rate active for the date of the purchase if available
+      x-stoplight:
+        id: 22ehhk0abtu69
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: country-code
+          description: country code for which purchase amount should be retrived
+    post:
+      summary: Create Purchase Transaction
+      operationId: post-purchase-transaction
+      responses:
+        "201":
+          description: Created
+      x-stoplight:
+        id: su6k75anh0lcx
+      requestBody:
+        $ref: "#/components/requestBodies/CreateNewPurchaseTransaction"
+components:
+  schemas:
+    Transaction:
+      title: Transaction
+      x-stoplight:
+        id: gm2dwpi0eroab
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          x-stoplight:
+            id: yk0k3qgj28nqu
+        amountInUSD:
+          type: string
+          x-stoplight:
+            id: 0qxl1p2vtau4b
+        description:
+          type: string
+          x-stoplight:
+            id: wou74kunjtl3d
+      required:
+        - id
+        - date
+        - amountInUSD
+  requestBodies:
+    CreateNewPurchaseTransaction:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              description:
+                type: string
+                x-stoplight:
+                  id: pbnuwmvylcpwb
+                maxLength: 50
+              amount:
+                type: number
+                x-stoplight:
+                  id: lv45q5qhhkaf3
+                format: float
+            required:
+              - description
+              - amount
+  responses:
+    GetPurchaseTransaction:
+      description: GetPurchaseTransaction will return Purchase Transaction details based for given country code
+      content:
+        application/json:
+          schema:
+            properties:
+              id:
+                type: string
+        application/xml:
+          schema:
+            type: object
+            properties:
+              transactionId:
+                type: string
+                x-stoplight:
+                  id: 1g6w2fwp1wmpv
+              description:
+                type: string
+                x-stoplight:
+                  id: spvzh2pfl2jyo
+              date:
+                type: string
+                x-stoplight:
+                  id: 9gnrifw4eqtfu
+              purchaseAmountInUSD:
+                type: string
+                x-stoplight:
+                  id: h6p8aichx1q30
+              exchangeRate:
+                type: string
+                x-stoplight:
+                  id: t8rarj5wczm4l
+              amount:
+                type: string
+                x-stoplight:
+                  id: kgusvqn8ekeks
+              countryCode:
+                type: string
+                x-stoplight:
+                  id: 7ae4pfrrztflk
+            required:
+              - transactionId
+              - description
+              - date
+              - purchaseAmountInUSD
+              - exchangeRate
+              - amount
+              - countryCode
