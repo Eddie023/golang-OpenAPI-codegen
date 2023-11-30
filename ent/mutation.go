@@ -14,6 +14,7 @@ import (
 	"github.com/eddie023/wex-tag/ent/predicate"
 	"github.com/eddie023/wex-tag/ent/transaction"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -35,8 +36,8 @@ type TransactionMutation struct {
 	typ              string
 	id               *uuid.UUID
 	date             *time.Time
-	amount_in_usd    *float64
-	addamount_in_usd *float64
+	amount_in_usd    *decimal.Decimal
+	addamount_in_usd *decimal.Decimal
 	description      *string
 	clearedFields    map[string]struct{}
 	done             bool
@@ -185,13 +186,13 @@ func (m *TransactionMutation) ResetDate() {
 }
 
 // SetAmountInUsd sets the "amount_in_usd" field.
-func (m *TransactionMutation) SetAmountInUsd(f float64) {
-	m.amount_in_usd = &f
+func (m *TransactionMutation) SetAmountInUsd(d decimal.Decimal) {
+	m.amount_in_usd = &d
 	m.addamount_in_usd = nil
 }
 
 // AmountInUsd returns the value of the "amount_in_usd" field in the mutation.
-func (m *TransactionMutation) AmountInUsd() (r float64, exists bool) {
+func (m *TransactionMutation) AmountInUsd() (r decimal.Decimal, exists bool) {
 	v := m.amount_in_usd
 	if v == nil {
 		return
@@ -202,7 +203,7 @@ func (m *TransactionMutation) AmountInUsd() (r float64, exists bool) {
 // OldAmountInUsd returns the old "amount_in_usd" field's value of the Transaction entity.
 // If the Transaction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TransactionMutation) OldAmountInUsd(ctx context.Context) (v float64, err error) {
+func (m *TransactionMutation) OldAmountInUsd(ctx context.Context) (v decimal.Decimal, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAmountInUsd is only allowed on UpdateOne operations")
 	}
@@ -216,17 +217,17 @@ func (m *TransactionMutation) OldAmountInUsd(ctx context.Context) (v float64, er
 	return oldValue.AmountInUsd, nil
 }
 
-// AddAmountInUsd adds f to the "amount_in_usd" field.
-func (m *TransactionMutation) AddAmountInUsd(f float64) {
+// AddAmountInUsd adds d to the "amount_in_usd" field.
+func (m *TransactionMutation) AddAmountInUsd(d decimal.Decimal) {
 	if m.addamount_in_usd != nil {
-		*m.addamount_in_usd += f
+		*m.addamount_in_usd = m.addamount_in_usd.Add(d)
 	} else {
-		m.addamount_in_usd = &f
+		m.addamount_in_usd = &d
 	}
 }
 
 // AddedAmountInUsd returns the value that was added to the "amount_in_usd" field in this mutation.
-func (m *TransactionMutation) AddedAmountInUsd() (r float64, exists bool) {
+func (m *TransactionMutation) AddedAmountInUsd() (r decimal.Decimal, exists bool) {
 	v := m.addamount_in_usd
 	if v == nil {
 		return
@@ -366,7 +367,7 @@ func (m *TransactionMutation) SetField(name string, value ent.Value) error {
 		m.SetDate(v)
 		return nil
 	case transaction.FieldAmountInUsd:
-		v, ok := value.(float64)
+		v, ok := value.(decimal.Decimal)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -410,7 +411,7 @@ func (m *TransactionMutation) AddedField(name string) (ent.Value, bool) {
 func (m *TransactionMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case transaction.FieldAmountInUsd:
-		v, ok := value.(float64)
+		v, ok := value.(decimal.Decimal)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

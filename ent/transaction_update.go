@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/eddie023/wex-tag/ent/predicate"
 	"github.com/eddie023/wex-tag/ent/transaction"
+	"github.com/shopspring/decimal"
 )
 
 // TransactionUpdate is the builder for updating Transaction entities.
@@ -43,23 +44,23 @@ func (tu *TransactionUpdate) SetNillableDate(t *time.Time) *TransactionUpdate {
 }
 
 // SetAmountInUsd sets the "amount_in_usd" field.
-func (tu *TransactionUpdate) SetAmountInUsd(f float64) *TransactionUpdate {
+func (tu *TransactionUpdate) SetAmountInUsd(d decimal.Decimal) *TransactionUpdate {
 	tu.mutation.ResetAmountInUsd()
-	tu.mutation.SetAmountInUsd(f)
+	tu.mutation.SetAmountInUsd(d)
 	return tu
 }
 
 // SetNillableAmountInUsd sets the "amount_in_usd" field if the given value is not nil.
-func (tu *TransactionUpdate) SetNillableAmountInUsd(f *float64) *TransactionUpdate {
-	if f != nil {
-		tu.SetAmountInUsd(*f)
+func (tu *TransactionUpdate) SetNillableAmountInUsd(d *decimal.Decimal) *TransactionUpdate {
+	if d != nil {
+		tu.SetAmountInUsd(*d)
 	}
 	return tu
 }
 
-// AddAmountInUsd adds f to the "amount_in_usd" field.
-func (tu *TransactionUpdate) AddAmountInUsd(f float64) *TransactionUpdate {
-	tu.mutation.AddAmountInUsd(f)
+// AddAmountInUsd adds d to the "amount_in_usd" field.
+func (tu *TransactionUpdate) AddAmountInUsd(d decimal.Decimal) *TransactionUpdate {
+	tu.mutation.AddAmountInUsd(d)
 	return tu
 }
 
@@ -111,11 +112,6 @@ func (tu *TransactionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TransactionUpdate) check() error {
-	if v, ok := tu.mutation.AmountInUsd(); ok {
-		if err := transaction.AmountInUsdValidator(v); err != nil {
-			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
-		}
-	}
 	if v, ok := tu.mutation.Description(); ok {
 		if err := transaction.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Transaction.description": %w`, err)}
@@ -183,23 +179,23 @@ func (tuo *TransactionUpdateOne) SetNillableDate(t *time.Time) *TransactionUpdat
 }
 
 // SetAmountInUsd sets the "amount_in_usd" field.
-func (tuo *TransactionUpdateOne) SetAmountInUsd(f float64) *TransactionUpdateOne {
+func (tuo *TransactionUpdateOne) SetAmountInUsd(d decimal.Decimal) *TransactionUpdateOne {
 	tuo.mutation.ResetAmountInUsd()
-	tuo.mutation.SetAmountInUsd(f)
+	tuo.mutation.SetAmountInUsd(d)
 	return tuo
 }
 
 // SetNillableAmountInUsd sets the "amount_in_usd" field if the given value is not nil.
-func (tuo *TransactionUpdateOne) SetNillableAmountInUsd(f *float64) *TransactionUpdateOne {
-	if f != nil {
-		tuo.SetAmountInUsd(*f)
+func (tuo *TransactionUpdateOne) SetNillableAmountInUsd(d *decimal.Decimal) *TransactionUpdateOne {
+	if d != nil {
+		tuo.SetAmountInUsd(*d)
 	}
 	return tuo
 }
 
-// AddAmountInUsd adds f to the "amount_in_usd" field.
-func (tuo *TransactionUpdateOne) AddAmountInUsd(f float64) *TransactionUpdateOne {
-	tuo.mutation.AddAmountInUsd(f)
+// AddAmountInUsd adds d to the "amount_in_usd" field.
+func (tuo *TransactionUpdateOne) AddAmountInUsd(d decimal.Decimal) *TransactionUpdateOne {
+	tuo.mutation.AddAmountInUsd(d)
 	return tuo
 }
 
@@ -264,11 +260,6 @@ func (tuo *TransactionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TransactionUpdateOne) check() error {
-	if v, ok := tuo.mutation.AmountInUsd(); ok {
-		if err := transaction.AmountInUsdValidator(v); err != nil {
-			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
-		}
-	}
 	if v, ok := tuo.mutation.Description(); ok {
 		if err := transaction.DescriptionValidator(v); err != nil {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Transaction.description": %w`, err)}

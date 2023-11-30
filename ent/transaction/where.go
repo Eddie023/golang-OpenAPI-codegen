@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/eddie023/wex-tag/ent/predicate"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // ID filters vertices based on their ID field.
@@ -61,7 +62,7 @@ func Date(v time.Time) predicate.Transaction {
 }
 
 // AmountInUsd applies equality check predicate on the "amount_in_usd" field. It's identical to AmountInUsdEQ.
-func AmountInUsd(v float64) predicate.Transaction {
+func AmountInUsd(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldAmountInUsd, v))
 }
 
@@ -111,42 +112,42 @@ func DateLTE(v time.Time) predicate.Transaction {
 }
 
 // AmountInUsdEQ applies the EQ predicate on the "amount_in_usd" field.
-func AmountInUsdEQ(v float64) predicate.Transaction {
+func AmountInUsdEQ(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldAmountInUsd, v))
 }
 
 // AmountInUsdNEQ applies the NEQ predicate on the "amount_in_usd" field.
-func AmountInUsdNEQ(v float64) predicate.Transaction {
+func AmountInUsdNEQ(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldNEQ(FieldAmountInUsd, v))
 }
 
 // AmountInUsdIn applies the In predicate on the "amount_in_usd" field.
-func AmountInUsdIn(vs ...float64) predicate.Transaction {
+func AmountInUsdIn(vs ...decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldIn(FieldAmountInUsd, vs...))
 }
 
 // AmountInUsdNotIn applies the NotIn predicate on the "amount_in_usd" field.
-func AmountInUsdNotIn(vs ...float64) predicate.Transaction {
+func AmountInUsdNotIn(vs ...decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldNotIn(FieldAmountInUsd, vs...))
 }
 
 // AmountInUsdGT applies the GT predicate on the "amount_in_usd" field.
-func AmountInUsdGT(v float64) predicate.Transaction {
+func AmountInUsdGT(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldGT(FieldAmountInUsd, v))
 }
 
 // AmountInUsdGTE applies the GTE predicate on the "amount_in_usd" field.
-func AmountInUsdGTE(v float64) predicate.Transaction {
+func AmountInUsdGTE(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldGTE(FieldAmountInUsd, v))
 }
 
 // AmountInUsdLT applies the LT predicate on the "amount_in_usd" field.
-func AmountInUsdLT(v float64) predicate.Transaction {
+func AmountInUsdLT(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldLT(FieldAmountInUsd, v))
 }
 
 // AmountInUsdLTE applies the LTE predicate on the "amount_in_usd" field.
-func AmountInUsdLTE(v float64) predicate.Transaction {
+func AmountInUsdLTE(v decimal.Decimal) predicate.Transaction {
 	return predicate.Transaction(sql.FieldLTE(FieldAmountInUsd, v))
 }
 

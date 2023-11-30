@@ -1,5 +1,7 @@
 package apiout
 
+import "errors"
+
 // APIError is used to pass an error during the request through the
 // application with web specific context.
 type APIError struct {
@@ -15,4 +17,10 @@ func NewRequestError(err error, status int) error {
 
 func (e *APIError) Error() string {
 	return e.Err.Error()
+}
+
+func IsApiError(err error) bool {
+	var be *APIError
+
+	return errors.As(err, &be)
 }

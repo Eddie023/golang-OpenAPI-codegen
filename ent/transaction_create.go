@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/eddie023/wex-tag/ent/transaction"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // TransactionCreate is the builder for creating a Transaction entity.
@@ -36,8 +37,8 @@ func (tc *TransactionCreate) SetNillableDate(t *time.Time) *TransactionCreate {
 }
 
 // SetAmountInUsd sets the "amount_in_usd" field.
-func (tc *TransactionCreate) SetAmountInUsd(f float64) *TransactionCreate {
-	tc.mutation.SetAmountInUsd(f)
+func (tc *TransactionCreate) SetAmountInUsd(d decimal.Decimal) *TransactionCreate {
+	tc.mutation.SetAmountInUsd(d)
 	return tc
 }
 
@@ -50,6 +51,14 @@ func (tc *TransactionCreate) SetDescription(s string) *TransactionCreate {
 // SetID sets the "id" field.
 func (tc *TransactionCreate) SetID(u uuid.UUID) *TransactionCreate {
 	tc.mutation.SetID(u)
+	return tc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (tc *TransactionCreate) SetNillableID(u *uuid.UUID) *TransactionCreate {
+	if u != nil {
+		tc.SetID(*u)
+	}
 	return tc
 }
 
@@ -92,6 +101,10 @@ func (tc *TransactionCreate) defaults() {
 		v := transaction.DefaultDate()
 		tc.mutation.SetDate(v)
 	}
+	if _, ok := tc.mutation.ID(); !ok {
+		v := transaction.DefaultID()
+		tc.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -101,11 +114,6 @@ func (tc *TransactionCreate) check() error {
 	}
 	if _, ok := tc.mutation.AmountInUsd(); !ok {
 		return &ValidationError{Name: "amount_in_usd", err: errors.New(`ent: missing required field "Transaction.amount_in_usd"`)}
-	}
-	if v, ok := tc.mutation.AmountInUsd(); ok {
-		if err := transaction.AmountInUsdValidator(v); err != nil {
-			return &ValidationError{Name: "amount_in_usd", err: fmt.Errorf(`ent: validator failed for field "Transaction.amount_in_usd": %w`, err)}
-		}
 	}
 	if _, ok := tc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Transaction.description"`)}

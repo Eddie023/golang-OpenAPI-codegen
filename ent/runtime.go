@@ -7,6 +7,7 @@ import (
 
 	"github.com/eddie023/wex-tag/ent/schema"
 	"github.com/eddie023/wex-tag/ent/transaction"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -19,12 +20,12 @@ func init() {
 	transactionDescDate := transactionFields[1].Descriptor()
 	// transaction.DefaultDate holds the default value on creation for the date field.
 	transaction.DefaultDate = transactionDescDate.Default.(func() time.Time)
-	// transactionDescAmountInUsd is the schema descriptor for amount_in_usd field.
-	transactionDescAmountInUsd := transactionFields[2].Descriptor()
-	// transaction.AmountInUsdValidator is a validator for the "amount_in_usd" field. It is called by the builders before save.
-	transaction.AmountInUsdValidator = transactionDescAmountInUsd.Validators[0].(func(float64) error)
 	// transactionDescDescription is the schema descriptor for description field.
 	transactionDescDescription := transactionFields[3].Descriptor()
 	// transaction.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	transaction.DescriptionValidator = transactionDescDescription.Validators[0].(func(string) error)
+	// transactionDescID is the schema descriptor for id field.
+	transactionDescID := transactionFields[0].Descriptor()
+	// transaction.DefaultID holds the default value on creation for the id field.
+	transaction.DefaultID = transactionDescID.Default.(func() uuid.UUID)
 }

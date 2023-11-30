@@ -7,10 +7,12 @@ import (
 	"github.com/eddie023/wex-tag/pkg/types"
 )
 
+// GET api/v1/transaction
 func (a *API) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, params types.GetPurchaseTransactionParams) {
 
 }
 
+// POST api/v1/transaction
 func (a *API) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -22,12 +24,14 @@ func (a *API) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := a.TransactionService.CreatePurchase(ctx, payload)
+	response, err := a.TransactionService.CreateNewPurchase(ctx, payload)
 	if err != nil {
 		apiout.Error(ctx, w, &apiout.BadRequestErr{
-			Msg: "err",
+			Msg: err.Error(),
 		})
+
+		return
 	}
 
-	apiout.JSON(ctx, w, out, http.StatusCreated)
+	apiout.JSON(ctx, w, response, http.StatusCreated)
 }

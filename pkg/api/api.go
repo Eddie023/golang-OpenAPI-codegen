@@ -31,10 +31,9 @@ func (a *API) Handler() http.Handler {
 	router.Use(middleware.RealIP)
 	router.Use(middleware.AllowContentType("application/json"))
 	router.Use(httplog.RequestLogger(getChiSlogLogger(a.Logger)))
-	router.Use(httplog.RequestLogger(getChiSlogLogger(a.Logger)))
 	router.Use(cors.Default().Handler)
 
-	// healthcheck handler
+	// dummy healthcheck handler
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

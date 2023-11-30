@@ -12,7 +12,7 @@ var (
 	TransactionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "date", Type: field.TypeTime},
-		{Name: "amount_in_usd", Type: field.TypeFloat64},
+		{Name: "amount_in_usd", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "numeric"}},
 		{Name: "description", Type: field.TypeString, Size: 50},
 	}
 	// TransactionsTable holds the schema information for the "transactions" table.

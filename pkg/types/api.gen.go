@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
@@ -24,10 +25,10 @@ import (
 
 // Transaction defines model for Transaction.
 type Transaction struct {
-	AmountInUSD string  `json:"amountInUSD"`
-	Date        string  `json:"date"`
-	Description *string `json:"description,omitempty"`
-	Id          string  `json:"id"`
+	AmountInUSD string    `json:"amountInUSD"`
+	Date        time.Time `json:"date"`
+	Description string    `json:"description"`
+	Id          string    `json:"id"`
 }
 
 // GetPurchaseTransaction defines model for GetPurchaseTransaction.
@@ -37,8 +38,8 @@ type GetPurchaseTransaction struct {
 
 // CreateNewPurchaseTransaction defines model for CreateNewPurchaseTransaction.
 type CreateNewPurchaseTransaction struct {
-	Amount      float32 `json:"amount"`
-	Description string  `json:"description"`
+	Amount      string `json:"amount"`
+	Description string `json:"description"`
 }
 
 // GetPurchaseTransactionParams defines parameters for GetPurchaseTransaction.
@@ -49,8 +50,8 @@ type GetPurchaseTransactionParams struct {
 
 // PostPurchaseTransactionJSONBody defines parameters for PostPurchaseTransaction.
 type PostPurchaseTransactionJSONBody struct {
-	Amount      float32 `json:"amount"`
-	Description string  `json:"description"`
+	Amount      string `json:"amount"`
+	Description string `json:"description"`
 }
 
 // PostPurchaseTransactionJSONRequestBody defines body for PostPurchaseTransaction for application/json ContentType.
@@ -638,24 +639,24 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xWW2/jNhP9KwS/79GJZdm56anZ7XYRoNgG2yxaYLsPI2ok0aZImhfJTuD/XpCy40vs",
-	"win6ZIPDOTNz5syIL5SpRiuJ0lmavVCDc4/WfVAFx3jw0SA4/ILdozesBotPBqQF5riSwc6UdChd+Ata",
-	"C84gWIZT25stq7GB8E8bpdG4NSw0yvdepTINOJrRUihwdEDdUiPNqPRNjoYO6OLCOqUFr+p4nxc0o6Kd",
-	"XM2v5nU9g3JMV6sBLdAyw/UmrQYWv6KsXE2zq+QV0zrDZXUCU+fSd027FEx3OV0F0MAGN1jQ7PtegMEm",
-	"/x+v0CqfInPBrXe0Wknb1/oZ3X9LXkj35aCmPu4uyqIR53XgHHJmlbftXN7iDGc2Es6Cu1l+VAWeC3ID",
-	"ONGlMc+uFLO+a+DO9r6rpOFlN8G5K/2xnp8DYnX7XKe6FOl0qSIILlgNssKv70jF3Row06uOPTcTEVH0",
-	"usH3kdUH+e33n88Fq6/1LXBWL0bzcRLB3FYlD8W5MKPqukvLTo+6Rrdv5buPOTiQc+zD8SoOGHqV/r4C",
-	"jg3CQYNOzAHpuBDEoPNGko2d7F4o0AEXluRgsSClMqTiLUqyjk9YSCCE66Ue1X0waMek/64mJfOFGOm0",
-	"deAn+bulu5wls/G8mqa3cv6vpdspfzOZeTl1YlxEkON7YL/vvNi2d7fu0DDuRPDc5eqwjcdTqZq06DRP",
-	"0CjI16uHy1JtdhqweBcb4IJmtAHJbZ2OWQ1eQAVc/lQF0yVTDR1QCU2IiEXBMUnH9I1wftMoyf3jA7Ea",
-	"GS/XCy4q4Y9Pf5Kn+89kR97xJt2W1+HiwkF14fbKbNHYHn10mYSQSqMEzWlGx5fhaEA1uDrqZej21VRh",
-	"LG8/yQ9RnV4rSTZjtJuVJdpgy5W3YkmszxvuHBYEZEGsUwaLQZgBw7FF4mpcH56AYkq2aIK/U4R5Y1Ay",
-	"jpZYr7WK5/kyojwZBOvNknzFYOCyImGKLVEl+bQe68hXnK2/ZEw/OG5mnhhwSELcFiPhwRjkFBDC/9cE",
-	"eUmgBS4gF0FrYd5gs8FOfQIDxwYadGgszb4fUro74DF4V3NWb0P2eia2Vl4UJMeewRaD5HkAmHs0y63C",
-	"1ngXcWEMdr6MhyP04+ALniZJ+Pm/wZJm9H/D7Ztp+HpveKLG1YBOkslbvXyzaMgX5cgvyst+nq1vGjDL",
-	"nq+ju/DEPKYp1vUsgdz567v+e6RsNO+34VHZE33YvvuWpyvdeRoO//FduHrD3+gtAT3CYeX96XuKt/56",
-	"dnMFsk4EW6yXkUXTbjTlTdhBtXM6Gw6FYiBqZV12myQJDZ0+hsmarpixFLyGO0NXq78DAAD//wMx7tYn",
-	"CwAA",
+	"H4sIAAAAAAAC/6xW32/bNhD+Vwhuj04ty06a6mlp1xUBhi7oUmxA14czdRJpUyTNH5Kdwv/7QMqOf8Qe",
+	"3KFPEnjkd3fffXfkN8p0Y7RC5R0tvlGLi4DOv9WlwLTwziJ4/IjdQ7CMg8NHC8oB80KraGdaeVQ+/oIx",
+	"UjCIluHM9WbHODYQ/4zVBq3fwEKjQ3/KrwzSgjpvharpgC6vnNdGiponsyhpQWU7uV5cLzifQzWm6/WA",
+	"luiYFWYbRQPL31HVntPiOhtchGmmKnRNu5LMdFO6jqAxeWGxpMWXAweDbbhfn6H1dIbMx2P9QWe0cn1q",
+	"H9D/WK5iuMc89X73UZaN/HGEz+vg2oW6xTnOXSKcxeN29U6XeCnIa8CJqax98pWc91UDf/HpN7Wyouom",
+	"uPBVOFXzS0CcaZ94biqZz1Y6geCScVA1fvqOUPytBTu77thTM5EJxWwKfJdYvVef//z1UjB+Y25BML4c",
+	"LcZZAvM7ldyXl8KM6psurzoz6hrTvpTvIebgSM6pDqezOGLoWfqHCjjVCEcFOtMHpBNSEos+WEW2drK/",
+	"oUQPQjoyBYclqbQltWhRkY1/wmIA0V0v9aTuo0Y7Jf3nIlXaNuBpQUsdpjKmeAnf2WIpRyZvPYTJ9EDM",
+	"OzzweOVFcynkap7Nx4t6lt+qxf9WeKfD68k8qJmX4zKBnB4Xh/IQ5U4FcFD9/RBilYWXEWef4OPanw6s",
+	"bvKyMyJDq2G6mVdCVXo7CIGlvdiAkLSgDSjheD5mHIKEGoT6pY6mV0w3dEAVNNEjlqXALB/TF2r7w6Ai",
+	"dw/3xBlkotpMxSSfv97/TR7vPpC9nkg76S69DpdXHuorf5Bmi9b16KNXWXSpDSowghZ0/CouDagBz5PI",
+	"hv5QgjWm9A6DfJskHYxWZNt7+1E5Yiy2QgcnV8SFaSO8x5KAKonz2mI5iI1jBbZIPMfN4hkoplWLNp73",
+	"mrBgLSom0BEXjNFpfbpKKI8WwQW7Ip8wGoSqSWx9R3RF3m9mQeIrNeQ/KoUfD24HBbHgkUS/LSbCozGK",
+	"KyLE/+cARUWgBSGh77vYpLAde+fuzcixhQY9WkeLL8eU7k+F5LzjgvGdy17dxHEdZEmm2DPYYmwAEQEW",
+	"Ae1qp7AN3lWaMoO96/S4ob4eXft5lsXPzxYrWtCfhrt31fB53/BMjusBnWSTl3r57NCSj9qT33RQfXe7",
+	"0DRgVz1fJwfomX7Mc+R8nsHUh5s3/SWmXTIfluFBuzN12L0NV+cz3Xs+Dv/z7bh+wd/oJQE9wnHm/er3",
+	"JO/Czfz1NSieSbbcDCOHtt1qKtg4g7j3phgOpWYguXa+uM2yjMZKn8JkTVfOWQ7BwBtL1+t/AwAA///i",
+	"e6dgSwsAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

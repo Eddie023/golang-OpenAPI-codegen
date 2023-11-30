@@ -34,7 +34,7 @@ type ErrorResponse struct {
 func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	var er ErrorResponse
 	switch {
-	case IsBadRequest(err):
+	case IsBadRequest(err) || IsApiError(err):
 		er = ErrorResponse{
 			Error: err.Error(),
 		}

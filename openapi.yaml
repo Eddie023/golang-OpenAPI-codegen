@@ -57,10 +57,12 @@ components:
           type: string
           x-stoplight:
             id: yk0k3qgj28nqu
+          format: date-time
         amountInUSD:
           type: string
           x-stoplight:
             id: 0qxl1p2vtau4b
+          format: double
         description:
           type: string
           x-stoplight:
@@ -69,6 +71,7 @@ components:
         - id
         - date
         - amountInUSD
+        - description
   requestBodies:
     CreateNewPurchaseTransaction:
       content:
@@ -82,10 +85,9 @@ components:
                   id: pbnuwmvylcpwb
                 maxLength: 50
               amount:
-                type: number
+                type: string
                 x-stoplight:
                   id: lv45q5qhhkaf3
-                format: float
             required:
               - description
               - amount

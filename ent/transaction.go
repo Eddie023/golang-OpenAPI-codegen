@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/eddie023/wex-tag/ent/transaction"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // Transaction is the model entity for the Transaction schema.
@@ -21,7 +22,7 @@ type Transaction struct {
 	// Date holds the value of the "date" field.
 	Date time.Time `json:"date,omitempty"`
 	// AmountInUsd holds the value of the "amount_in_usd" field.
-	AmountInUsd float64 `json:"amount_in_usd,omitempty"`
+	AmountInUsd decimal.Decimal `json:"amount_in_usd,omitempty"`
 	// Description holds the value of the "description" field.
 	Description  string `json:"description,omitempty"`
 	selectValues sql.SelectValues
@@ -33,7 +34,7 @@ func (*Transaction) scanValues(columns []string) ([]any, error) {
 	for i := range columns {
 		switch columns[i] {
 		case transaction.FieldAmountInUsd:
-			values[i] = new(sql.NullFloat64)
+			values[i] = new(decimal.Decimal)
 		case transaction.FieldDescription:
 			values[i] = new(sql.NullString)
 		case transaction.FieldDate:
@@ -68,10 +69,10 @@ func (t *Transaction) assignValues(columns []string, values []any) error {
 				t.Date = value.Time
 			}
 		case transaction.FieldAmountInUsd:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
+			if value, ok := values[i].(*decimal.Decimal); !ok {
 				return fmt.Errorf("unexpected type %T for field amount_in_usd", values[i])
-			} else if value.Valid {
-				t.AmountInUsd = value.Float64
+			} else if value != nil {
+				t.AmountInUsd = *value
 			}
 		case transaction.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
