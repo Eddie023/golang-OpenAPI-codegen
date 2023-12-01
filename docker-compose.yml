@@ -5,10 +5,10 @@ services:
     container_name: wex-tag-db
     restart: "unless-stopped"
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=wex_tag
+      - DATABASE_HOST=localhost
     ports:
       - '5432:5432'
     expose:
@@ -16,7 +16,7 @@ services:
     volumes:
       #### NOTE: Adding this initial database initialization script for demo purposes only
       - ./ent/migrate/migrations/20231129130624_create_transaction_table.up.sql:/docker-entrypoint-initdb.d/db_init.sql
-      - ./pg_data:/var/lib/postgresql/data
+      # - ./pg_data:/var/lib/postgresql/data
   
   pgadmin-console:
     image: dpage/pgadmin4
