@@ -36,13 +36,14 @@ func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	var aerr *APIError
 	switch {
 	case IsBadRequest(err):
-
+		er = ErrorResponse{
+			Error: err.Error(),
+		}
 		w.WriteHeader(http.StatusBadRequest)
 	case errors.As(err, &aerr):
 		er = ErrorResponse{
 			Error: err.Error(),
 		}
-
 		w.WriteHeader(aerr.Status)
 	default:
 		er = ErrorResponse{

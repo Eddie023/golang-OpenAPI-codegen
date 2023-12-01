@@ -60,7 +60,7 @@ func (a *API) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 
 	response, err := a.TransactionService.CreateNewPurchaseTransaction(ctx, payload)
 	if err != nil {
-		apiout.Error(ctx, w, &apiout.BadRequestErr{Msg: errors.Wrap(err, "failed to create new purchase transaction").Error()})
+		apiout.Error(ctx, w, err)
 		return
 	}
 

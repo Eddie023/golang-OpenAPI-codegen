@@ -26,7 +26,7 @@ func (s *Service) CreateNewPurchaseTransaction(ctx context.Context, payload type
 
 	amount, err := decimal.NewFromString(payload.Amount)
 	if err != nil {
-		return types.Transaction{}, apiout.BadRequest(errors.Wrap(err, fmt.Sprintf("unable to parse '%s'", payload.Amount)).Error())
+		return types.Transaction{}, apiout.BadRequest(fmt.Sprintf("unable to parse provided amount '%s'", payload.Amount))
 	}
 
 	// we are passing amount type as string for precision. Thus, we need to check for case
