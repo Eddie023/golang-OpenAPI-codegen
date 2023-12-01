@@ -55,7 +55,7 @@ func TestCreatePurchaseTransaction(t *testing.T) {
 				Amount:      "-123.123abcd",
 				Description: "Invalid amount",
 			},
-			wantErr: errors.New("can't convert"),
+			wantErr: errors.New("unable to parse provided amount"),
 			want:    "",
 		},
 	}
