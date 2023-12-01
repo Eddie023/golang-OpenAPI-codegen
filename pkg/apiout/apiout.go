@@ -51,7 +51,10 @@ func Error(ctx context.Context, w http.ResponseWriter, err error) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	json.NewEncoder(w).Encode(er)
+	err = json.NewEncoder(w).Encode(er)
+	if err != nil {
+		slog.Error("failed to encode", "err", err.Error())
+	}
 }
 
 // DecodeJSONBody decodes a JSON body and returns client-friendly errors.
