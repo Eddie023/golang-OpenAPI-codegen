@@ -114,6 +114,7 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 	return response.Data[0], nil
 }
 
+// ConvertCurrency will return the converted purchase amount for the provided purchase price in USD to exchange rate information.
 func (e *ExchangeRateGetter) ConvertCurrency(payload ExchangeRatePayload, trans *ent.Transaction, er ExchangeRateResponse) (types.GetPurchaseTransaction, error) {
 	exchangeRate, err := decimal.NewFromString(er.ExchangeRate)
 	if err != nil {
@@ -152,6 +153,7 @@ func convertAmount(original decimal.Decimal, exchangeRate decimal.Decimal) decim
 	return original.Mul(exchangeRate)
 }
 
+// getURLWithRawQueryParams will generate required query param for our exchange rate API call.
 func getURLWithRawQueryParms(payload ExchangeRatePayload) string {
 	// remove " quotes from our query params
 	country := strings.Trim(payload.CountryName, "\"")

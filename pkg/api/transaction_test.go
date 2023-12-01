@@ -21,6 +21,9 @@ import (
 	"gotest.tools/assert"
 )
 
+/// NOTE:
+//// These tests are primarily written to test the rigidity of our API layer rather than our business logic. Business logic test are written in service layer.
+
 // newTestServer creates a configured API server for use in Go tests.
 // The default time of the server is 1st Jan 2022, 10:00am UTC.
 // This can be overriden by providing a custom clock with the withClock() option.
