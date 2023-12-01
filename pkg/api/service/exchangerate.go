@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -43,7 +45,11 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 		return ExchangeRateResponse{}, err
 	}
 
-	filter := fmt.Sprintf("record_date:lte:%s,country_currency_desc:eq:%s-%s", payload.RecordDate.Format(time.DateOnly), payload.CountryName, payload.Currency)
+	// remove " quotes from our query params
+	country := strings.Trim(payload.CountryName, "\"")
+	currency := strings.Trim(payload.Currency, "\"")
+
+	filter := fmt.Sprintf("record_date:lte:%s,country_currency_desc:eq:%s-%s", payload.RecordDate.Format(time.DateOnly), url.QueryEscape(country), url.QueryEscape(currency))
 	fields := "country_currency_desc,exchange_rate,record_date"
 	// sort by record_date in descending order such that we will get the first item which is closest to our purchase date within last six months
 	sort := "-record_date"
@@ -53,6 +59,8 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 	client := &http.Client{}
 
 	var resp *http.Response
+
+	slog.Debug("generated exchange rate API", "url", req.URL)
 
 	// since, this API have a rate limiting, we will try to expotentially backoff and retry if we get too many request error from the API.
 	operation := func() error {
@@ -82,8 +90,6 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 	}
 
 	var response ExchangeRateAPIResponse
-
-	slog.Debug("generated exchange rate API", "url", req.URL)
 
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
@@ -121,6 +127,9 @@ func (e *ExchangeRateGetter) ConvertCurrency(payload ExchangeRatePayload, trans 
 		return types.GetPurchaseTransaction{}, err
 	}
 
+	country := strings.Trim(payload.CountryName, "\"")
+	currency := strings.Trim(payload.Currency, "\"")
+
 	convertedAmount := convertAmount(trans.AmountInUsd, exchangeRate)
 
 	response := types.GetPurchaseTransaction{
@@ -132,8 +141,8 @@ func (e *ExchangeRateGetter) ConvertCurrency(payload ExchangeRatePayload, trans 
 		},
 		ConvertedDetails: types.ConvertedPurchasePrice{
 			Amount:           convertedAmount.String(),
-			Country:          payload.CountryName,
-			Currency:         payload.Currency,
+			Country:          country,
+			Currency:         currency,
 			ExchangeRateUsed: er.ExchangeRate,
 			ExchangeRateDate: er.RecordDate,
 		},
