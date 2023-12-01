@@ -106,15 +106,17 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 	}
 
 	// parse string to Date
-	recordDate, err := time.Parse(time.DateOnly, response.Data[0].RecordDate)
+	latestedRecordDate, err := time.Parse(time.DateOnly, response.Data[0].RecordDate)
 	if err != nil {
 		return ExchangeRateResponse{}, apiout.NewRequestError(errors.New("unable to parse returned record date"), http.StatusInternalServerError)
 	}
 
 	// currency conversion rate can be less than or equal to purchase date from within the last 6 months
 	sixMonthBeforePurchaseDate := getSixMonthBeforePurchaseDate(payload.RecordDate)
-	if recordDate.Before(sixMonthBeforePurchaseDate) {
-		return ExchangeRateResponse{}, apiout.NewRequestError(errors.New("the purchase cannot be converted to the target currency"), http.StatusBadRequest)
+
+	if latestedRecordDate.Before(sixMonthBeforePurchaseDate) {
+		slog.Debug("unable to find currency conversion rate within last 6 months", "latest_date", latestedRecordDate)
+		return ExchangeRateResponse{}, apiout.NewRequestError(errors.New("the purchase cannot be converted to the target currency, unable to find currency converson rate within last 6 months"), http.StatusBadRequest)
 	}
 
 	// we can return the first item since we have already sorted our API response to our need.
