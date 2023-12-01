@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func TestExchangeRateGetter_GetExchangeRate(t *testing.T) {
+func TestGetExchangeRate(t *testing.T) {
 	tests := []struct {
 		name         string
 		purchaseDate string

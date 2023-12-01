@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eddie023/wex-tag/pkg/test"
+	"github.com/eddie023/wex-tag/pkg/db"
 	"github.com/eddie023/wex-tag/pkg/types"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -63,7 +63,7 @@ func TestCreatePurchaseTransaction(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			ent := test.NewDatabase(t)
+			ent := db.CreateTestDatabase(t)
 			defer ent.Close()
 
 			s := Service{

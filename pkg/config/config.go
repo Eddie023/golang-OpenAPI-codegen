@@ -26,7 +26,7 @@ type ApiConfig struct {
 		Port     string `conf:"default:5432,env:DB_PORT"`
 		User     string `conf:"default:user,env:DB_USER"`
 		Dbname   string `conf:"default:wex_tag,env:DB_NAME"`
-		Password string `conf:"default:pass,env:DB_PASSWORD"`
+		Password string `conf:"default:pass,env:DB_PASS,mask"`
 	}
 }
 

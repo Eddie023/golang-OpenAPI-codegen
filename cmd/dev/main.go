@@ -77,7 +77,7 @@ var CreateCommand = cli.Command{
 			log.Fatalf("failed named diff with err: %s", err)
 		}
 
-		fmt.Println("done")
+		fmt.Println("successfully created new migration file")
 
 		return nil
 	},
@@ -119,6 +119,8 @@ var UpCommand = cli.Command{
 		if err := m.Up(); err != nil {
 			return errors.WithMessage(err, "m.up")
 		}
+
+		fmt.Println("successfully completed migration up")
 
 		return nil
 	},
