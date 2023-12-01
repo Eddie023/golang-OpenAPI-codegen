@@ -160,3 +160,44 @@ func TestConvertAmount(t *testing.T) {
 		})
 	}
 }
+
+func TestGetURLWithRawQueryParms(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		given ExchangeRatePayload
+		want  string
+	}{
+		{
+			name: "should correctly escape andpersand in query string value",
+			given: ExchangeRatePayload{
+				CountryName: "SAO TOME & PRINCIPE",
+				Currency:    "NEW DOBRAS",
+			},
+			want: "filter=record_date:lte:0001-01-01,country_currency_desc:eq:SAO+TOME+%26+PRINCIPE-NEW+DOBRAS&fields=country_currency_desc,exchange_rate,record_date&sort=-record_date&page[size]=1",
+		},
+		{
+			name: "should correctly trim extra double quotes in query param",
+			given: ExchangeRatePayload{
+				CountryName: `United Kingdom`,
+				Currency:    `Pound`,
+			},
+			want: "filter=record_date:lte:0001-01-01,country_currency_desc:eq:United+Kingdom-Pound&fields=country_currency_desc,exchange_rate,record_date&sort=-record_date&page[size]=1",
+		},
+		{
+			name: "should correctly trim single quotes in query param",
+			given: ExchangeRatePayload{
+				CountryName: `'United Kingdom'`,
+				Currency:    `"Pound"`,
+			},
+			want: "filter=record_date:lte:0001-01-01,country_currency_desc:eq:United+Kingdom-Pound&fields=country_currency_desc,exchange_rate,record_date&sort=-record_date&page[size]=1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getURLWithRawQueryParms(tt.given); got != tt.want {
+				t.Errorf("getURLWithRawQueryParms() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

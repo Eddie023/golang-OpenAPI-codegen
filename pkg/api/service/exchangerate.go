@@ -45,16 +45,7 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 		return ExchangeRateResponse{}, err
 	}
 
-	// remove " quotes from our query params
-	country := strings.Trim(payload.CountryName, "\"")
-	currency := strings.Trim(payload.Currency, "\"")
-
-	filter := fmt.Sprintf("record_date:lte:%s,country_currency_desc:eq:%s-%s", payload.RecordDate.Format(time.DateOnly), url.QueryEscape(country), url.QueryEscape(currency))
-	fields := "country_currency_desc,exchange_rate,record_date"
-	// sort by record_date in descending order such that we will get the first item which is closest to our purchase date within last six months
-	sort := "-record_date"
-
-	req.URL.RawQuery = fmt.Sprintf("filter=%s&fields=%s&sort=%s&page[size]=1", filter, fields, sort)
+	req.URL.RawQuery = getURLWithRawQueryParms(payload)
 
 	client := &http.Client{}
 
@@ -98,7 +89,7 @@ func (e *ExchangeRateGetter) GetExchangeRate(ctx context.Context, payload Exchan
 
 	// for invalid country or currency, API will still return 200 with empty list
 	if len(response.Data) == 0 {
-		return ExchangeRateResponse{}, apiout.NewRequestError(errors.New("the purchase cannot be converted to the target currency"), http.StatusBadRequest)
+		return ExchangeRateResponse{}, apiout.NewRequestError(errors.New("the purchase cannot be converted to the target currency, exchange rate API returned empty result"), http.StatusBadRequest)
 	}
 
 	if resp != nil {
@@ -159,4 +150,21 @@ func getSixMonthBeforePurchaseDate(d time.Time) time.Time {
 
 func convertAmount(original decimal.Decimal, exchangeRate decimal.Decimal) decimal.Decimal {
 	return original.Mul(exchangeRate)
+}
+
+func getURLWithRawQueryParms(payload ExchangeRatePayload) string {
+	// remove " quotes from our query params
+	country := strings.Trim(payload.CountryName, "\"")
+	country = strings.Trim(country, "'")
+	currency := strings.Trim(payload.Currency, "\"")
+	currency = strings.Trim(currency, "'")
+
+	filter := fmt.Sprintf("record_date:lte:%s,country_currency_desc:eq:%s-%s", payload.RecordDate.Format(time.DateOnly), url.QueryEscape(country), url.QueryEscape(currency))
+	fields := "country_currency_desc,exchange_rate,record_date"
+	// sort by record_date in descending order such that we will get the first item which is closest to our purchase date within last six months
+	sort := "-record_date"
+
+	output := fmt.Sprintf("filter=%s&fields=%s&sort=%s&page[size]=1", filter, fields, sort)
+
+	return output
 }
