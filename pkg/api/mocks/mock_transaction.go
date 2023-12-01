@@ -12,7 +12,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	ent "github.com/eddie023/wex-tag/ent"
 	types "github.com/eddie023/wex-tag/pkg/types"
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -52,4 +54,19 @@ func (m *MockTransactionService) CreateNewPurchaseTransaction(arg0 context.Conte
 func (mr *MockTransactionServiceMockRecorder) CreateNewPurchaseTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewPurchaseTransaction", reflect.TypeOf((*MockTransactionService)(nil).CreateNewPurchaseTransaction), arg0, arg1)
+}
+
+// GetPurchaseDetailsByTransactionId mocks base method.
+func (m *MockTransactionService) GetPurchaseDetailsByTransactionId(arg0 context.Context, arg1 uuid.UUID) (*ent.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPurchaseDetailsByTransactionId", arg0, arg1)
+	ret0, _ := ret[0].(*ent.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPurchaseDetailsByTransactionId indicates an expected call of GetPurchaseDetailsByTransactionId.
+func (mr *MockTransactionServiceMockRecorder) GetPurchaseDetailsByTransactionId(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPurchaseDetailsByTransactionId", reflect.TypeOf((*MockTransactionService)(nil).GetPurchaseDetailsByTransactionId), arg0, arg1)
 }

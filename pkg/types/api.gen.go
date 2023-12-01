@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,6 +23,15 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// ConvertedPurchasePrice defines model for ConvertedPurchasePrice.
+type ConvertedPurchasePrice struct {
+	Amount           string `json:"amount"`
+	Country          string `json:"country"`
+	Currency         string `json:"currency"`
+	ExchangeRateDate string `json:"exchangeRateDate"`
+	ExchangeRateUsed string `json:"exchangeRateUsed"`
+}
+
 // Transaction defines model for Transaction.
 type Transaction struct {
 	AmountInUSD string    `json:"amountInUSD"`
@@ -30,24 +40,13 @@ type Transaction struct {
 	Id          string    `json:"id"`
 }
 
+// CreatePurchaseTransaction defines model for CreatePurchaseTransaction.
+type CreatePurchaseTransaction = Transaction
+
 // GetPurchaseTransaction defines model for GetPurchaseTransaction.
 type GetPurchaseTransaction struct {
-	ConvertedPurchasePrice struct {
-		Amount           string `json:"amount"`
-		Country          string `json:"country"`
-		Currency         string `json:"currency"`
-		ExchangeRateDate string `json:"exchangeRateDate"`
-		ExchangeRateUsed string `json:"exchangeRateUsed"`
-	} `json:"convertedPurchasePrice"`
-	Description           string `json:"description"`
-	OriginalPurchasePrice struct {
-		Amount   string `json:"amount"`
-		Currency string `json:"currency"`
-	} `json:"originalPurchasePrice"`
-	Transaction struct {
-		Date string `json:"date"`
-		Id   string `json:"id"`
-	} `json:"transaction"`
+	ConvertedDetails   ConvertedPurchasePrice `json:"convertedDetails"`
+	TransactionDetails Transaction            `json:"transactionDetails"`
 }
 
 // CreateNewPurchaseTransaction defines model for CreateNewPurchaseTransaction.
@@ -212,7 +211,7 @@ func NewPostPurchaseTransactionRequestWithBody(server string, contentType string
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/transaction")
+	operationPath := fmt.Sprintf("/purchase")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -248,7 +247,7 @@ func NewGetPurchaseTransactionRequest(server string, transactionId string, param
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/transaction/%s", pathParam0)
+	operationPath := fmt.Sprintf("/purchase/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -351,6 +350,8 @@ type ClientWithResponsesInterface interface {
 type PostPurchaseTransactionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON201      *CreatePurchaseTransaction
+	XML201       *CreatePurchaseTransaction
 }
 
 // Status returns HTTPResponse.Status
@@ -430,6 +431,23 @@ func ParsePostPurchaseTransactionResponse(rsp *http.Response) (*PostPurchaseTran
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreatePurchaseTransaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "xml") && rsp.StatusCode == 201:
+		var dest CreatePurchaseTransaction
+		if err := xml.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.XML201 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -462,10 +480,10 @@ func ParseGetPurchaseTransactionResponse(rsp *http.Response) (*GetPurchaseTransa
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Create Purchase Transaction
-	// (POST /transaction)
+	// (POST /purchase)
 	PostPurchaseTransaction(w http.ResponseWriter, r *http.Request)
 	// Get Purchase Transaction
-	// (GET /transaction/{transactionId})
+	// (GET /purchase/{transactionId})
 	GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, transactionId string, params GetPurchaseTransactionParams)
 }
 
@@ -474,13 +492,13 @@ type ServerInterface interface {
 type Unimplemented struct{}
 
 // Create Purchase Transaction
-// (POST /transaction)
+// (POST /purchase)
 func (_ Unimplemented) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Get Purchase Transaction
-// (GET /transaction/{transactionId})
+// (GET /purchase/{transactionId})
 func (_ Unimplemented) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, transactionId string, params GetPurchaseTransactionParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
@@ -682,10 +700,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/transaction", wrapper.PostPurchaseTransaction)
+		r.Post(options.BaseURL+"/purchase", wrapper.PostPurchaseTransaction)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/transaction/{transactionId}", wrapper.GetPurchaseTransaction)
+		r.Get(options.BaseURL+"/purchase/{transactionId}", wrapper.GetPurchaseTransaction)
 	})
 
 	return r
@@ -694,27 +712,26 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xWTY/bNhD9KwTbozeWtf6QfWrSBMECRbtIN2iBNIeROJIoSyRNUrLlYP97Qcpa22t7",
-	"601zs0nxcebNm8f5RhNZKSlQWEMX36jGVY3GvpOMo1/4VSNY/B3X97VOcjD4oEEYSCyXwu0nUlgU1v0E",
-	"pUqegNsZFqbbNkmOFbhfSkuF2u5goZJ1d8q2CumCGqu5yOiAbm6MlarkWe63OaMLOkvjMpnVrFlLAfTx",
-	"cUAZmkRz1UdRweY3FJnN6WISDK7CnGw2ZhnOsChGYUUfHahLnmtkdPHl6IJBH+7XJ2gZF5hYd6w7aJQU",
-	"pkvtI9ofy1UiRYPaIuth7zVP8P9yCqtwhHY0XUIYc89p4o7r9lqAYB3mm9EEonUwnnUAtdYokqsRVlHB",
-	"WBJLnAdF6xFwk+QgMvwEFt+DxWuRxna0GiFYY2ahOUH6bFxNr0Nqo82a81Rkm2bcnMqi5+gg2TN3PQnm",
-	"TEYnGjofhy2ieDwvqrAtl+Kc5K9JRk/GAUxu18WGTRoPIjXPuIDyh0qpWEW2zRueB9U8+i4lKKx0EtWj",
-	"bQxwjvU915c68QIBcTHbFE0VhKIsfGT2uCWP02avkNwEIJ1M47lkYb710Pxqkc2mk2gSCqWm4609TZc7",
-	"BbFXiCXaLossHs3mUTbP/8vLzkvgmJnBJdM554DPpHnBAMmalyXRaGstSL9PDj9gaIGXhsRgkJFUapLx",
-	"BgXZ9RwBwciTEty1nWH6yj28VNZOM3fi85/v3d9U6gosXVAm67j0qV9Rs+U2vIVIrfN2DF29e7Xs8cDi",
-	"jeXVtZAzOZ1PRCWWUtjie3tcsaQxPJ2uy3ZiLurwssQGR/Qch+CqzW3pcB6O1HGNKOsqN9slLEe23foH",
-	"1oUmUtm/hJD4b7ECXtIFrUBwk4e3SQ51CRlw8Uvmtt4ksqIDKqByNyJjHIPwlp6o7g+Fgry9vyNGYcLT",
-	"3ePqZfTXh7/Jw9uP5EDh/ku6T2+NmxsL2c1xEzSoTYc+ehO4K6VCAYrTBb1945YGVIHNvciGz51FGp+f",
-	"E6IP5c6Rci/N2elgcDB5edf8WWNKF/Sn4X4+Gx4NZ8MXJ7PnQ0kYjLzBHVHWIbCul+qqAvf471bPtuiF",
-	"Sss2W003TaRzztrOEQ7ZGH47+HPHHt25DO1pPO9849dKCqL62w+OGqI0NlzWpmyJqeOKW4vM24KxUiMb",
-	"OHvRHBskNsfd4gWoJ38jVvauwtEQUysl/XrcepQHjWBq3ZJP6Da4yIh7yw2RKfmwe9y9mrxt/SN8+O5g",
-	"//IT7eh09zbo5eg2Xes5BPf7KUCeEmiAl9C50rFyLoyVToEaKrSoDV18eU5p753u3nXOk3x/W9f2xOSy",
-	"LhmJsSOv8eMLd2dXNfpJZ9d6+9FnbyRW1zg4GFxPTOcknp1/nwvosD33UR0W6lJk+/Hg+tC+nnRIcLnv",
-	"dt8NLxThcUDHwfhU0Ievm5CWpLIWz9vtI9rX9NpEtGNEU4RBYrqx/cX6H3LK2e757cTtDOq5JfYEO1fb",
-	"83vUvq8j2eeKuumjq7Xz+txatRgOS5lAmUtjF1EQBNSV5FzK69VyJKfzuoDb1I2X/wYAAP//wi8LDrQO",
-	"AAA=",
+	"H4sIAAAAAAAC/6xWW4/bNhP9KwS/71Eby7e96Km5IVigaBdpghZI80CJI4m2RNK8SHIW/u8FKcmWbXnj",
+	"NH2zRfLwzJmZM3zGiSil4MCNxtEzVrCxoM0bQRn4D28VEAO/Qf1kVZITDZ8U4Zokhgnu1hPBDXDjfhIp",
+	"C5YQtzJZ6XZZJzmUxP2SSkhQpoMlpbDtKbOVgCOsjWI8wwFubrQRsmBZ7pcZxRFeNWw63ZisNpRavNsF",
+	"mIJOFJM9i5I0vwLPTI6jZRhcham44vksKdcs5hzvHKgLnimgOPpydEHQ0/26hxbxChLjjrUHtRRcDxX7",
+	"Wbn+ryDFEf7f5JCfSbuqJ0NMd/0QqSmLfwt0Kit+35BSFoD68PAuwB/A/LeVkAhegTJA34EhrNDf4/y2",
+	"39/TeFIs8dTMgc+VWKdCDgtgBC04JztWEacyjkuGalYUSIGxiqN+HQ030PYOFBMNFKVCoYxVwFHialFt",
+	"EeEUJVYp4MnW0+/C8kU4rtJP9uHtenWn72ffSps1sb+y43ItQGMXhUn5plY0m7YAfQBXIuh1eMfT+ewO",
+	"MrH0CNAkOeEZfCQG3hED1yKFMpwSE7P7abqsz5A+a1cG1yE93E7F/cJIOlvcwbmV7EM8yDVy195kRiJy",
+	"VcZM4YhcSOxpGY4TXbDbZUNWso5tPPMhn/TwWHE88s9/vHN/U6FKYnCEqbBxMbjzRXG2mdlaxR/qUhRN",
+	"691dkg54xMCNYeW1kKJIH3im65iuFvOxcXANSFGu0zWst5tkbu48CBtJ+GkumUuUDyA4kueYwiBfQ4Gv",
+	"S5JgD3ldhopsbvUUtwOG8VT0HksSvxdKwgoc4ZJwpvPZPMmJLUhGGP8lc0uvElHiAHNSuhuBUgbhbI7P",
+	"3Ol3CRy9fnpEWkLC0s62vd38+f4v9On1BzSwQr8TH8KrobkxJLsxR2FWoHSLPn0VuiuFBE4kwxGev3Kf",
+	"AiyJyX2RTWRXyL7+hPbBHVNsJ6pGBHGoUb//iJbzwtZL9dF3urduV9g+tEcn8pPQo3MsGLyAtpfGx9Ej",
+	"afLiC+n0cTALp5dRu32Tyy8I7/K2LImz3E6X0eFx6SG1qsJvq3W+XNxX29ap9vpPngfCPdKdO5TBSDre",
+	"+HlkpeCjudBIKqiYsLrYIm3jkhkD1GdIG6GABi5TikEFyOTQfbwAtR+4yIh+2DHQSFsphf8ebz3KJwVE",
+	"W7VFH8EtMJ6hj75oRIred37qi9dP07+5p+8O9maLlNPS3VuBr3636DrdIbjfe4IsRaQirCCtCR4X1oX3",
+	"kSt4RUowoDSOvpxK2o90d2+dsyQ/3Na6DNK5sAVFMbTiVX5iMHd2Y8FPlK7TDyPm4FtGWQgGL7Azjzvj",
+	"042sMULD9jqwGibqErPDHLye2tezBgq/30AXkrAL8CJcnBf08NHFhUGpsJye9NoHMD/SaA2larOe5TkP",
+	"WeGhXsz/UFPWO1lb3IlrclfOQ+/rFXYuehD4qH9/TGUfLKiqp2eVmy25MTKaTAqRkCIX2kT3YRhil5Ox",
+	"mJcFf1ivqs1mprh7Bv0TAAD//wT4E5VcDgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

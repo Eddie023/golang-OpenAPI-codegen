@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/eddie023/wex-tag/ent"
+	"github.com/eddie023/wex-tag/ent/transaction"
 	"github.com/eddie023/wex-tag/pkg/apiout"
 	"github.com/eddie023/wex-tag/pkg/types"
 	"github.com/google/uuid"
@@ -42,11 +44,23 @@ func (s *Service) CreateNewPurchaseTransaction(ctx context.Context, payload type
 	slog.Info("successfully processed new purchase transaction", "transaction_id", transaction.ID)
 
 	return types.Transaction{
-		AmountInUSD: fmt.Sprintf("%.2f", roundedAmount.InexactFloat64()),
-		Date:        transaction.Date,
+		AmountInUSD: roundedAmount.String(),
+		Date:        transaction.Date.UTC(),
 		Description: transaction.Description,
 		Id:          transaction.ID.String(),
 	}, nil
+}
+
+// GetPurchaseDetailsByTransactionId will query the database to see if the purchase order with provided transaction id exist.
+func (s *Service) GetPurchaseDetailsByTransactionId(ctx context.Context, id uuid.UUID) (*ent.Transaction, error) {
+	slog.Info("fetching transaction details", "transaction_id", id)
+
+	transaction, err := s.Ent.Transaction.Query().Where(transaction.ID(id)).First(ctx)
+	if err != nil {
+		return nil, apiout.NewRequestError(errors.New("given transaction id not found"), http.StatusNotFound)
+	}
+
+	return transaction, nil
 }
 
 // ParseStringToUUID will try to parse the provided string to UUID

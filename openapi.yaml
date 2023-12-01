@@ -1,6 +1,6 @@
 openapi: 3.1.0
 x-stoplight:
-  id: wqk1o69uja3f8
+  id: 5ln9kjvqq2rne
 info:
   title: wex-tag-transaction
   version: "1.0"
@@ -11,26 +11,27 @@ info:
 servers:
   - url: "http://localhost:8000"
 paths:
-  /transaction:
+  /purchase:
     parameters: []
     post:
       summary: Create Purchase Transaction
       operationId: post-purchase-transaction
       responses:
         "201":
-          description: Created
+          $ref: "#/components/responses/CreatePurchaseTransaction"
       x-stoplight:
-        id: oygq6xv8rhidy
+        id: jjv0zjkh548vy
       requestBody:
         $ref: "#/components/requestBodies/CreateNewPurchaseTransaction"
-  "/transaction/{transactionId}":
+      description: Creates a new purchase transaction and returns transaction details
+  "/purchase/{transactionId}":
     parameters:
       - schema:
           type: string
         name: transactionId
         in: path
         required: true
-        description: transaction id returned by post transaction API
+        description: transaction id returned by creating new purchase
     get:
       summary: Get Purchase Transaction
       tags: []
@@ -44,7 +45,7 @@ paths:
         Based upon purchase transactions previously submitted and stored, retrieve the stored purchase transactions converted to currencies supported by the Treasury Reporting Rates of Exchange API based
         upon the exchange rate active for the date of the purchase if available
       x-stoplight:
-        id: 5ny4eesj20csi
+        id: xddrqk2hhn0il
       parameters:
         - schema:
             type: string
@@ -63,7 +64,7 @@ components:
     Transaction:
       title: Transaction
       x-stoplight:
-        id: umhszkak1tyzm
+        id: oi9hwm0raq6s1
       type: object
       properties:
         id:
@@ -71,22 +72,54 @@ components:
         date:
           type: string
           x-stoplight:
-            id: 7o695nmnkontj
+            id: olf9ngswbdj43
           format: date-time
         amountInUSD:
           type: string
           x-stoplight:
-            id: kz23a8pwhy4az
+            id: ygtyurn9wmolx
           format: double
         description:
           type: string
           x-stoplight:
-            id: pdcvsif6wly5s
+            id: lmkfkekyqc3t7
       required:
         - id
         - date
         - amountInUSD
         - description
+    ConvertedPurchasePrice:
+      title: ConvertedPurchasePrice
+      x-stoplight:
+        id: 4i65xajpwbub2
+      type: object
+      properties:
+        currency:
+          type: string
+          x-stoplight:
+            id: sk07nf327ego5
+        country:
+          type: string
+          x-stoplight:
+            id: xu4ltfnqwrdg1
+        exchangeRateUsed:
+          type: string
+          x-stoplight:
+            id: 961o84tpd247e
+        amount:
+          type: string
+          x-stoplight:
+            id: 6kj7s82zmugxb
+        exchangeRateDate:
+          type: string
+          x-stoplight:
+            id: 0p01atbi81f5w
+      required:
+        - currency
+        - country
+        - exchangeRateUsed
+        - amount
+        - exchangeRateDate
   requestBodies:
     CreateNewPurchaseTransaction:
       content:
@@ -97,12 +130,12 @@ components:
               description:
                 type: string
                 x-stoplight:
-                  id: 5xxsk27ejj12m
+                  id: rnrnh2cmkibnn
                 maxLength: 50
               amount:
                 type: string
                 x-stoplight:
-                  id: 7fblc7udvwona
+                  id: jxi11qtgwtddu
             required:
               - description
               - amount
@@ -114,75 +147,23 @@ components:
           schema:
             type: object
             properties:
-              description:
-                type: string
+              transactionDetails:
+                $ref: "#/components/schemas/Transaction"
                 x-stoplight:
-                  id: r540a53wjxd5v
-              originalPurchasePrice:
-                type: object
+                  id: eufnk1ruf40mo
+              convertedDetails:
+                $ref: "#/components/schemas/ConvertedPurchasePrice"
                 x-stoplight:
-                  id: rbj7xjvm02nlj
-                required:
-                  - currency
-                  - amount
-                properties:
-                  currency:
-                    type: string
-                    x-stoplight:
-                      id: pemrc8u1zbaav
-                  amount:
-                    type: string
-                    x-stoplight:
-                      id: jq8tyhvih0m98
-              transaction:
-                type: object
-                x-stoplight:
-                  id: 8zkjgb1798g9h
-                required:
-                  - id
-                  - date
-                properties:
-                  id:
-                    type: string
-                    x-stoplight:
-                      id: 765852npp64zt
-                  date:
-                    type: string
-                    x-stoplight:
-                      id: 5aaf56b9od2hz
-              convertedPurchasePrice:
-                type: object
-                x-stoplight:
-                  id: tj8b49jm2ylkn
-                required:
-                  - country
-                  - currency
-                  - exchangeRateUsed
-                  - amount
-                  - exchangeRateDate
-                properties:
-                  country:
-                    type: string
-                    x-stoplight:
-                      id: 0w2hx15a8w047
-                  currency:
-                    type: string
-                    x-stoplight:
-                      id: q8jddcboe90jy
-                  exchangeRateUsed:
-                    type: string
-                    x-stoplight:
-                      id: y8xwiifngxv4v
-                  amount:
-                    type: string
-                    x-stoplight:
-                      id: aq21et16ka2bi
-                  exchangeRateDate:
-                    type: string
-                    x-stoplight:
-                      id: 4t1q1eatss72s
+                  id: o31kxyzigccu7
             required:
-              - description
-              - originalPurchasePrice
-              - transaction
-              - convertedPurchasePrice
+              - transactionDetails
+              - convertedDetails
+    CreatePurchaseTransaction:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Transaction"
+        application/xml:
+          schema:
+            $ref: "#/components/schemas/Transaction"

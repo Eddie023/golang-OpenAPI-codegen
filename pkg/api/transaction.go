@@ -4,14 +4,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/eddie023/wex-tag/ent/transaction"
 	"github.com/eddie023/wex-tag/pkg/api/service"
 	"github.com/eddie023/wex-tag/pkg/apiout"
 	"github.com/eddie023/wex-tag/pkg/types"
 	"github.com/pkg/errors"
 )
 
-// GET api/v1/transaction/{transaction_id}
+// GET /purchase/{transaction_id}?country=""&currency=""
 func (a *API) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, transactionId string, params types.GetPurchaseTransactionParams) {
 	ctx := r.Context()
 
@@ -22,32 +21,32 @@ func (a *API) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, tra
 		return
 	}
 
-	transaction, err := a.Db.Transaction.Query().Where(transaction.ID(uuidString)).First(ctx)
+	transactionDetails, err := a.TransactionService.GetPurchaseDetailsByTransactionId(ctx, uuidString)
 	if err != nil {
-		apiout.Error(ctx, w, apiout.NewRequestError(errors.New("given transaction id not found"), http.StatusNotFound))
+		apiout.Error(ctx, w, err)
 		return
 	}
 
-	exchangeInfo, err := a.ExchangeRateService.GetExchangeRate(ctx, service.ExchangeRatePayload{
+	exchangeRateDetails, err := a.ExchangeRateService.GetExchangeRate(ctx, service.ExchangeRatePayload{
 		CountryName: params.Country,
 		Currency:    params.Currency,
-		RecordDate:  transaction.Date,
+		RecordDate:  transactionDetails.Date,
 	})
 	if err != nil {
 		apiout.Error(ctx, w, err)
 		return
 	}
 
-	output, err := a.ExchangeRateService.ConvertCurrency(service.ExchangeRatePayload{CountryName: params.Country, Currency: params.Currency}, transaction, exchangeInfo)
+	response, err := a.ExchangeRateService.ConvertCurrency(service.ExchangeRatePayload{CountryName: params.Country, Currency: params.Currency}, transactionDetails, exchangeRateDetails)
 	if err != nil {
 		apiout.Error(ctx, w, err)
 		return
 	}
 
-	apiout.JSON(ctx, w, output, http.StatusOK)
+	apiout.JSON(ctx, w, response, http.StatusOK)
 }
 
-// POST api/v1/transaction
+// POST /purchase
 func (a *API) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -61,10 +60,7 @@ func (a *API) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 
 	response, err := a.TransactionService.CreateNewPurchaseTransaction(ctx, payload)
 	if err != nil {
-		apiout.Error(ctx, w, &apiout.BadRequestErr{
-			Msg: err.Error(),
-		})
-
+		apiout.Error(ctx, w, &apiout.BadRequestErr{Msg: errors.Wrap(err, "failed to create new purchase transaction").Error()})
 		return
 	}
 

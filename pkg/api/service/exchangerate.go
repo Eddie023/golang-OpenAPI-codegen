@@ -124,33 +124,18 @@ func (e *ExchangeRateGetter) ConvertCurrency(payload ExchangeRatePayload, trans 
 	convertedAmount := convertAmount(trans.AmountInUsd, exchangeRate)
 
 	response := types.GetPurchaseTransaction{
-		ConvertedPurchasePrice: struct {
-			Amount           string "json:\"amount\""
-			Country          string "json:\"country\""
-			Currency         string "json:\"currency\""
-			ExchangeRateDate string "json:\"exchangeRateDate\""
-			ExchangeRateUsed string "json:\"exchangeRateUsed\""
-		}{
-			Amount:           RoundToNearestCent(convertedAmount).String(),
+		TransactionDetails: types.Transaction{
+			AmountInUSD: trans.AmountInUsd.String(),
+			Date:        trans.Date,
+			Description: trans.Description,
+			Id:          trans.ID.String(),
+		},
+		ConvertedDetails: types.ConvertedPurchasePrice{
+			Amount:           convertedAmount.String(),
 			Country:          payload.CountryName,
 			Currency:         payload.Currency,
-			ExchangeRateDate: er.RecordDate,
 			ExchangeRateUsed: er.ExchangeRate,
-		},
-		Description: trans.Description,
-		OriginalPurchasePrice: struct {
-			Amount   string "json:\"amount\""
-			Currency string "json:\"currency\""
-		}{
-			Amount:   trans.AmountInUsd.String(),
-			Currency: "USD",
-		},
-		Transaction: struct {
-			Date string "json:\"date\""
-			Id   string "json:\"id\""
-		}{
-			Date: trans.Date.Format(time.DateTime),
-			Id:   trans.ID.String(),
+			ExchangeRateDate: er.RecordDate,
 		},
 	}
 

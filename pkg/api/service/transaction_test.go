@@ -38,7 +38,7 @@ func TestCreatePurchaseTransaction(t *testing.T) {
 				Description: "Positive amount",
 			},
 			wantErr: nil,
-			want:    "0.00",
+			want:    "0",
 		},
 		{
 			name: "should fail for negative amount value",
