@@ -147,7 +147,7 @@ func TestConvertAmount(t *testing.T) {
 				original:     decimal.NewFromFloat(100),
 				exchangeRate: decimal.NewFromFloat(132.90),
 			},
-			want: decimal.NewFromFloat(13000.00),
+			want: decimal.NewFromFloat(13290.00),
 		},
 	}
 	for _, tt := range tests {
