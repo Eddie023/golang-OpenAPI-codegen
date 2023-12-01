@@ -20,7 +20,7 @@ Response: {
 ``` 
 
 ```
-API: GET {BASE_URL}/purchase/transaction/ae90db91-d278-4941-b2b0-92e3b6f666e2?country=Nepal&currency=Rupee
+API: GET {BASE_URL}/purchase/ae90db91-d278-4941-b2b0-92e3b6f666e2?country=Nepal&currency=Rupee
 
 Response: {
     "convertedDetails": {
