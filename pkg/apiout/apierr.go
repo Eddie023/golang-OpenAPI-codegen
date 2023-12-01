@@ -19,6 +19,10 @@ func (e *APIError) Error() string {
 	return e.Err.Error()
 }
 
+func (e *APIError) GetHttpStatus() int {
+	return e.Status
+}
+
 func IsApiError(err error) bool {
 	var be *APIError
 

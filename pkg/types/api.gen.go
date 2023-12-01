@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,7 +32,22 @@ type Transaction struct {
 
 // GetPurchaseTransaction defines model for GetPurchaseTransaction.
 type GetPurchaseTransaction struct {
-	Id *string `json:"id,omitempty"`
+	ConvertedPurchasePrice struct {
+		Amount           string `json:"amount"`
+		Country          string `json:"country"`
+		Currency         string `json:"currency"`
+		ExchangeRateDate string `json:"exchangeRateDate"`
+		ExchangeRateUsed string `json:"exchangeRateUsed"`
+	} `json:"convertedPurchasePrice"`
+	Description           string `json:"description"`
+	OriginalPurchasePrice struct {
+		Amount   string `json:"amount"`
+		Currency string `json:"currency"`
+	} `json:"originalPurchasePrice"`
+	Transaction struct {
+		Date string `json:"date"`
+		Id   string `json:"id"`
+	} `json:"transaction"`
 }
 
 // CreateNewPurchaseTransaction defines model for CreateNewPurchaseTransaction.
@@ -42,16 +56,19 @@ type CreateNewPurchaseTransaction struct {
 	Description string `json:"description"`
 }
 
-// GetPurchaseTransactionParams defines parameters for GetPurchaseTransaction.
-type GetPurchaseTransactionParams struct {
-	// CountryCode country code for which purchase amount should be retrived
-	CountryCode *string `form:"country-code,omitempty" json:"country-code,omitempty"`
-}
-
 // PostPurchaseTransactionJSONBody defines parameters for PostPurchaseTransaction.
 type PostPurchaseTransactionJSONBody struct {
 	Amount      string `json:"amount"`
 	Description string `json:"description"`
+}
+
+// GetPurchaseTransactionParams defines parameters for GetPurchaseTransaction.
+type GetPurchaseTransactionParams struct {
+	// Country country for which purchase amount should be retrived
+	Country string `form:"country" json:"country"`
+
+	// Currency currency for which purchase transaction should be converted to
+	Currency string `form:"currency" json:"currency"`
 }
 
 // PostPurchaseTransactionJSONRequestBody defines body for PostPurchaseTransaction for application/json ContentType.
@@ -130,25 +147,13 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetPurchaseTransaction request
-	GetPurchaseTransaction(ctx context.Context, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// PostPurchaseTransactionWithBody request with any body
 	PostPurchaseTransactionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostPurchaseTransaction(ctx context.Context, body PostPurchaseTransactionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
 
-func (c *Client) GetPurchaseTransaction(ctx context.Context, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPurchaseTransactionRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
+	// GetPurchaseTransaction request
+	GetPurchaseTransaction(ctx context.Context, transactionId string, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostPurchaseTransactionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -175,53 +180,16 @@ func (c *Client) PostPurchaseTransaction(ctx context.Context, body PostPurchaseT
 	return c.Client.Do(req)
 }
 
-// NewGetPurchaseTransactionRequest generates requests for GetPurchaseTransaction
-func NewGetPurchaseTransactionRequest(server string, params *GetPurchaseTransactionParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
+func (c *Client) GetPurchaseTransaction(ctx context.Context, transactionId string, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPurchaseTransactionRequest(c.Server, transactionId, params)
 	if err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/transaction")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.CountryCode != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "country-code", runtime.ParamLocationQuery, *params.CountryCode); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
 // NewPostPurchaseTransactionRequest calls the generic PostPurchaseTransaction builder with application/json body
@@ -260,6 +228,70 @@ func NewPostPurchaseTransactionRequestWithBody(server string, contentType string
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetPurchaseTransactionRequest generates requests for GetPurchaseTransaction
+func NewGetPurchaseTransactionRequest(server string, transactionId string, params *GetPurchaseTransactionParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "transactionId", runtime.ParamLocationPath, transactionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/transaction/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "country", runtime.ParamLocationQuery, params.Country); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "currency", runtime.ParamLocationQuery, params.Currency); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -307,36 +339,13 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetPurchaseTransactionWithResponse request
-	GetPurchaseTransactionWithResponse(ctx context.Context, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*GetPurchaseTransactionResponse, error)
-
 	// PostPurchaseTransactionWithBodyWithResponse request with any body
 	PostPurchaseTransactionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostPurchaseTransactionResponse, error)
 
 	PostPurchaseTransactionWithResponse(ctx context.Context, body PostPurchaseTransactionJSONRequestBody, reqEditors ...RequestEditorFn) (*PostPurchaseTransactionResponse, error)
-}
 
-type GetPurchaseTransactionResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *GetPurchaseTransaction
-	XML200       *GetPurchaseTransaction
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPurchaseTransactionResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPurchaseTransactionResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
+	// GetPurchaseTransactionWithResponse request
+	GetPurchaseTransactionWithResponse(ctx context.Context, transactionId string, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*GetPurchaseTransactionResponse, error)
 }
 
 type PostPurchaseTransactionResponse struct {
@@ -360,13 +369,26 @@ func (r PostPurchaseTransactionResponse) StatusCode() int {
 	return 0
 }
 
-// GetPurchaseTransactionWithResponse request returning *GetPurchaseTransactionResponse
-func (c *ClientWithResponses) GetPurchaseTransactionWithResponse(ctx context.Context, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*GetPurchaseTransactionResponse, error) {
-	rsp, err := c.GetPurchaseTransaction(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
+type GetPurchaseTransactionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *GetPurchaseTransaction
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPurchaseTransactionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
 	}
-	return ParseGetPurchaseTransactionResponse(rsp)
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPurchaseTransactionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 // PostPurchaseTransactionWithBodyWithResponse request with arbitrary body returning *PostPurchaseTransactionResponse
@@ -384,6 +406,31 @@ func (c *ClientWithResponses) PostPurchaseTransactionWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParsePostPurchaseTransactionResponse(rsp)
+}
+
+// GetPurchaseTransactionWithResponse request returning *GetPurchaseTransactionResponse
+func (c *ClientWithResponses) GetPurchaseTransactionWithResponse(ctx context.Context, transactionId string, params *GetPurchaseTransactionParams, reqEditors ...RequestEditorFn) (*GetPurchaseTransactionResponse, error) {
+	rsp, err := c.GetPurchaseTransaction(ctx, transactionId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPurchaseTransactionResponse(rsp)
+}
+
+// ParsePostPurchaseTransactionResponse parses an HTTP response from a PostPurchaseTransactionWithResponse call
+func ParsePostPurchaseTransactionResponse(rsp *http.Response) (*PostPurchaseTransactionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostPurchaseTransactionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
 }
 
 // ParseGetPurchaseTransactionResponse parses an HTTP response from a GetPurchaseTransactionWithResponse call
@@ -407,29 +454,6 @@ func ParseGetPurchaseTransactionResponse(rsp *http.Response) (*GetPurchaseTransa
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "xml") && rsp.StatusCode == 200:
-		var dest GetPurchaseTransaction
-		if err := xml.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.XML200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParsePostPurchaseTransactionResponse parses an HTTP response from a PostPurchaseTransactionWithResponse call
-func ParsePostPurchaseTransactionResponse(rsp *http.Response) (*PostPurchaseTransactionResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostPurchaseTransactionResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -437,27 +461,27 @@ func ParsePostPurchaseTransactionResponse(rsp *http.Response) (*PostPurchaseTran
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get Purchase Transaction
-	// (GET /transaction)
-	GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, params GetPurchaseTransactionParams)
 	// Create Purchase Transaction
 	// (POST /transaction)
 	PostPurchaseTransaction(w http.ResponseWriter, r *http.Request)
+	// Get Purchase Transaction
+	// (GET /transaction/{transactionId})
+	GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, transactionId string, params GetPurchaseTransactionParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
 
-// Get Purchase Transaction
-// (GET /transaction)
-func (_ Unimplemented) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, params GetPurchaseTransactionParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
 // Create Purchase Transaction
 // (POST /transaction)
 func (_ Unimplemented) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Purchase Transaction
+// (GET /transaction/{transactionId})
+func (_ Unimplemented) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, transactionId string, params GetPurchaseTransactionParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -470,25 +494,12 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetPurchaseTransaction operation middleware
-func (siw *ServerInterfaceWrapper) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
+// PostPurchaseTransaction operation middleware
+func (siw *ServerInterfaceWrapper) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetPurchaseTransactionParams
-
-	// ------------- Optional query parameter "country-code" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "country-code", r.URL.Query(), &params.CountryCode)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "country-code", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPurchaseTransaction(w, r, params)
+		siw.Handler.PostPurchaseTransaction(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -498,12 +509,56 @@ func (siw *ServerInterfaceWrapper) GetPurchaseTransaction(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// PostPurchaseTransaction operation middleware
-func (siw *ServerInterfaceWrapper) PostPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
+// GetPurchaseTransaction operation middleware
+func (siw *ServerInterfaceWrapper) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// ------------- Path parameter "transactionId" -------------
+	var transactionId string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "transactionId", runtime.ParamLocationPath, chi.URLParam(r, "transactionId"), &transactionId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "transactionId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPurchaseTransactionParams
+
+	// ------------- Required query parameter "country" -------------
+
+	if paramValue := r.URL.Query().Get("country"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "country"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "country", r.URL.Query(), &params.Country)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "country", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "currency" -------------
+
+	if paramValue := r.URL.Query().Get("currency"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "currency"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "currency", r.URL.Query(), &params.Currency)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "currency", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostPurchaseTransaction(w, r)
+		siw.Handler.GetPurchaseTransaction(w, r, transactionId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -627,10 +682,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/transaction", wrapper.GetPurchaseTransaction)
+		r.Post(options.BaseURL+"/transaction", wrapper.PostPurchaseTransaction)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/transaction", wrapper.PostPurchaseTransaction)
+		r.Get(options.BaseURL+"/transaction/{transactionId}", wrapper.GetPurchaseTransaction)
 	})
 
 	return r
@@ -639,24 +694,27 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xW32/bNhD+Vwhuj04ty06a6mlp1xUBhi7oUmxA14czdRJpUyTNH5Kdwv/7QMqOf8Qe",
-	"3KFPEnjkd3fffXfkN8p0Y7RC5R0tvlGLi4DOv9WlwLTwziJ4/IjdQ7CMg8NHC8oB80KraGdaeVQ+/oIx",
-	"UjCIluHM9WbHODYQ/4zVBq3fwEKjQ3/KrwzSgjpvharpgC6vnNdGiponsyhpQWU7uV5cLzifQzWm6/WA",
-	"luiYFWYbRQPL31HVntPiOhtchGmmKnRNu5LMdFO6jqAxeWGxpMWXAweDbbhfn6H1dIbMx2P9QWe0cn1q",
-	"H9D/WK5iuMc89X73UZaN/HGEz+vg2oW6xTnOXSKcxeN29U6XeCnIa8CJqax98pWc91UDf/HpN7Wyouom",
-	"uPBVOFXzS0CcaZ94biqZz1Y6geCScVA1fvqOUPytBTu77thTM5EJxWwKfJdYvVef//z1UjB+Y25BML4c",
-	"LcZZAvM7ldyXl8KM6psurzoz6hrTvpTvIebgSM6pDqezOGLoWfqHCjjVCEcFOtMHpBNSEos+WEW2drK/",
-	"oUQPQjoyBYclqbQltWhRkY1/wmIA0V0v9aTuo0Y7Jf3nIlXaNuBpQUsdpjKmeAnf2WIpRyZvPYTJ9EDM",
-	"OzzweOVFcynkap7Nx4t6lt+qxf9WeKfD68k8qJmX4zKBnB4Xh/IQ5U4FcFD9/RBilYWXEWef4OPanw6s",
-	"bvKyMyJDq2G6mVdCVXo7CIGlvdiAkLSgDSjheD5mHIKEGoT6pY6mV0w3dEAVNNEjlqXALB/TF2r7w6Ai",
-	"dw/3xBlkotpMxSSfv97/TR7vPpC9nkg76S69DpdXHuorf5Bmi9b16KNXWXSpDSowghZ0/CouDagBz5PI",
-	"hv5QgjWm9A6DfJskHYxWZNt7+1E5Yiy2QgcnV8SFaSO8x5KAKonz2mI5iI1jBbZIPMfN4hkoplWLNp73",
-	"mrBgLSom0BEXjNFpfbpKKI8WwQW7Ip8wGoSqSWx9R3RF3m9mQeIrNeQ/KoUfD24HBbHgkUS/LSbCozGK",
-	"KyLE/+cARUWgBSGh77vYpLAde+fuzcixhQY9WkeLL8eU7k+F5LzjgvGdy17dxHEdZEmm2DPYYmwAEQEW",
-	"Ae1qp7AN3lWaMoO96/S4ob4eXft5lsXPzxYrWtCfhrt31fB53/BMjusBnWSTl3r57NCSj9qT33RQfXe7",
-	"0DRgVz1fJwfomX7Mc+R8nsHUh5s3/SWmXTIfluFBuzN12L0NV+cz3Xs+Dv/z7bh+wd/oJQE9wnHm/er3",
-	"JO/Czfz1NSieSbbcDCOHtt1qKtg4g7j3phgOpWYguXa+uM2yjMZKn8JkTVfOWQ7BwBtL1+t/AwAA///i",
-	"e6dgSwsAAA==",
+	"H4sIAAAAAAAC/6xWTY/bNhD9KwTbozeWtf6QfWrSBMECRbtIN2iBNIeROJIoSyRNUrLlYP97Qcpa22t7",
+	"601zs0nxcebNm8f5RhNZKSlQWEMX36jGVY3GvpOMo1/4VSNY/B3X97VOcjD4oEEYSCyXwu0nUlgU1v0E",
+	"pUqegNsZFqbbNkmOFbhfSkuF2u5goZJ1d8q2CumCGqu5yOiAbm6MlarkWe63OaMLOkvjMpnVrFlLAfTx",
+	"cUAZmkRz1UdRweY3FJnN6WISDK7CnGw2ZhnOsChGYUUfHahLnmtkdPHl6IJBH+7XJ2gZF5hYd6w7aJQU",
+	"pkvtI9ofy1UiRYPaIuth7zVP8P9yCqtwhHY0XUIYc89p4o7r9lqAYB3mm9EEonUwnnUAtdYokqsRVlHB",
+	"WBJLnAdF6xFwk+QgMvwEFt+DxWuRxna0GiFYY2ahOUH6bFxNr0Nqo82a81Rkm2bcnMqi5+gg2TN3PQnm",
+	"TEYnGjofhy2ieDwvqrAtl+Kc5K9JRk/GAUxu18WGTRoPIjXPuIDyh0qpWEW2zRueB9U8+i4lKKx0EtWj",
+	"bQxwjvU915c68QIBcTHbFE0VhKIsfGT2uCWP02avkNwEIJ1M47lkYb710Pxqkc2mk2gSCqWm4609TZc7",
+	"BbFXiCXaLossHs3mUTbP/8vLzkvgmJnBJdM554DPpHnBAMmalyXRaGstSL9PDj9gaIGXhsRgkJFUapLx",
+	"BgXZ9RwBwciTEty1nWH6yj28VNZOM3fi85/v3d9U6gosXVAm67j0qV9Rs+U2vIVIrfN2DF29e7Xs8cDi",
+	"jeXVtZAzOZ1PRCWWUtjie3tcsaQxPJ2uy3ZiLurwssQGR/Qch+CqzW3pcB6O1HGNKOsqN9slLEe23foH",
+	"1oUmUtm/hJD4b7ECXtIFrUBwk4e3SQ51CRlw8Uvmtt4ksqIDKqByNyJjHIPwlp6o7g+Fgry9vyNGYcLT",
+	"3ePqZfTXh7/Jw9uP5EDh/ku6T2+NmxsL2c1xEzSoTYc+ehO4K6VCAYrTBb1945YGVIHNvciGz51FGp+f",
+	"E6IP5c6Rci/N2elgcDB5edf8WWNKF/Sn4X4+Gx4NZ8MXJ7PnQ0kYjLzBHVHWIbCul+qqAvf471bPtuiF",
+	"Sss2W003TaRzztrOEQ7ZGH47+HPHHt25DO1pPO9849dKCqL62w+OGqI0NlzWpmyJqeOKW4vM24KxUiMb",
+	"OHvRHBskNsfd4gWoJ38jVvauwtEQUysl/XrcepQHjWBq3ZJP6Da4yIh7yw2RKfmwe9y9mrxt/SN8+O5g",
+	"//IT7eh09zbo5eg2Xes5BPf7KUCeEmiAl9C50rFyLoyVToEaKrSoDV18eU5p753u3nXOk3x/W9f2xOSy",
+	"LhmJsSOv8eMLd2dXNfpJZ9d6+9FnbyRW1zg4GFxPTOcknp1/nwvosD33UR0W6lJk+/Hg+tC+nnRIcLnv",
+	"dt8NLxThcUDHwfhU0Ievm5CWpLIWz9vtI9rX9NpEtGNEU4RBYrqx/cX6H3LK2e757cTtDOq5JfYEO1fb",
+	"83vUvq8j2eeKuumjq7Xz+txatRgOS5lAmUtjF1EQBNSV5FzK69VyJKfzuoDb1I2X/wYAAP//wi8LDrQO",
+	"AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

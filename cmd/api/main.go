@@ -56,7 +56,7 @@ func run(slog *slog.Logger) error {
 	swagger, err := types.GetSwagger()
 	if err != nil {
 		slog.Error("swagger spec", "err", err)
-		os.Exit(1)
+		return err
 	}
 
 	swagger.Servers = nil
@@ -69,6 +69,7 @@ func run(slog *slog.Logger) error {
 		TransactionService: &service.Service{
 			Ent: db,
 		},
+		ExchangeRateService: &service.ExchangeRateGetter{},
 	}
 
 	server := &http.Server{

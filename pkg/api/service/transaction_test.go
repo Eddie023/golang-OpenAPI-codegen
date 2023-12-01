@@ -8,16 +8,10 @@ import (
 
 	"github.com/eddie023/wex-tag/pkg/test"
 	"github.com/eddie023/wex-tag/pkg/types"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gotest.tools/assert"
 )
-
-// System should not have two transactions with same id
-// Two request should not create same identifier
-// Description cannot exceed 50 chars
-// Purchase amount should be valid positive number rounded to the nearest cent
-
-// the stored currency must be equal to provided value
 
 func TestCreatePurchase(t *testing.T) {
 	type testcase struct {
@@ -76,7 +70,7 @@ func TestCreatePurchase(t *testing.T) {
 				Ent: ent,
 			}
 
-			newTransaction, err := s.CreateNewPurchase(context.TODO(), tc.payload)
+			newTransaction, err := s.CreateNewPurchaseTransaction(context.TODO(), tc.payload)
 			if err != nil {
 				if strings.Contains(err.Error(), tc.wantErr.Error()) {
 					return
@@ -132,6 +126,55 @@ func TestRoundToNearestCent(t *testing.T) {
 			got := RoundToNearestCent(tt.given)
 
 			assert.Equal(t, tt.want, got.String())
+		})
+	}
+}
+
+func TestParseStringToUUID(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		given   string
+		want    uuid.UUID
+		wantErr bool
+	}{
+		{
+			name:    "valid UUID string",
+			given:   "8d8b30af-5b77-4fa0-9270-a85bec6600dd",
+			wantErr: false,
+		},
+		{
+			name:    "valid version 1 UUID string",
+			given:   "114dec4e-8f91-11ee-b9d1-0242ac120002",
+			wantErr: false,
+		},
+		{
+			name:    "valid version 4 UUID string",
+			given:   "69802563-9655-42c3-94ff-41537d1f8332",
+			wantErr: false,
+		},
+		{
+			name:    "invalid UUID string with invalid length",
+			given:   "69802563-9655-42c3-94ff-invalid",
+			wantErr: true,
+		},
+		{
+			name:    "invalid UUID string with valid length",
+			given:   "69802563-9655-42c3-94ff-41537d1f()^^",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseStringToUUID(tt.given)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+
+				t.Fatal()
+			}
+			assert.Equal(t, tt.given, got.String())
 		})
 	}
 }

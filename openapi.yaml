@@ -1,6 +1,6 @@
 openapi: 3.1.0
 x-stoplight:
-  id: cmwdkc2aupa9r
+  id: wqk1o69uja3f8
 info:
   title: wex-tag-transaction
   version: "1.0"
@@ -13,26 +13,6 @@ servers:
 paths:
   /transaction:
     parameters: []
-    get:
-      summary: Get Purchase Transaction
-      tags: []
-      responses:
-        "200":
-          $ref: "#/components/responses/GetPurchaseTransaction"
-        "404":
-          description: User Not Found
-      operationId: get-purchase-transaction
-      description: |-
-        Based upon purchase transactions previously submitted and stored, retrieve the stored purchase transactions converted to currencies supported by the Treasury Reporting Rates of Exchange API based
-        upon the exchange rate active for the date of the purchase if available
-      x-stoplight:
-        id: 22ehhk0abtu69
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: country-code
-          description: country code for which purchase amount should be retrived
     post:
       summary: Create Purchase Transaction
       operationId: post-purchase-transaction
@@ -40,15 +20,50 @@ paths:
         "201":
           description: Created
       x-stoplight:
-        id: su6k75anh0lcx
+        id: oygq6xv8rhidy
       requestBody:
         $ref: "#/components/requestBodies/CreateNewPurchaseTransaction"
+  "/transaction/{transactionId}":
+    parameters:
+      - schema:
+          type: string
+        name: transactionId
+        in: path
+        required: true
+        description: transaction id returned by post transaction API
+    get:
+      summary: Get Purchase Transaction
+      tags: []
+      responses:
+        "200":
+          $ref: "#/components/responses/GetPurchaseTransaction"
+        "404":
+          description: Transaction not found
+      operationId: get-purchase-transaction
+      description: |-
+        Based upon purchase transactions previously submitted and stored, retrieve the stored purchase transactions converted to currencies supported by the Treasury Reporting Rates of Exchange API based
+        upon the exchange rate active for the date of the purchase if available
+      x-stoplight:
+        id: 5ny4eesj20csi
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: country
+          description: country for which purchase amount should be retrived
+          required: true
+        - schema:
+            type: string
+          in: query
+          name: currency
+          description: currency for which purchase transaction should be converted to
+          required: true
 components:
   schemas:
     Transaction:
       title: Transaction
       x-stoplight:
-        id: gm2dwpi0eroab
+        id: umhszkak1tyzm
       type: object
       properties:
         id:
@@ -56,17 +71,17 @@ components:
         date:
           type: string
           x-stoplight:
-            id: yk0k3qgj28nqu
+            id: 7o695nmnkontj
           format: date-time
         amountInUSD:
           type: string
           x-stoplight:
-            id: 0qxl1p2vtau4b
+            id: kz23a8pwhy4az
           format: double
         description:
           type: string
           x-stoplight:
-            id: wou74kunjtl3d
+            id: pdcvsif6wly5s
       required:
         - id
         - date
@@ -82,61 +97,92 @@ components:
               description:
                 type: string
                 x-stoplight:
-                  id: pbnuwmvylcpwb
+                  id: 5xxsk27ejj12m
                 maxLength: 50
               amount:
                 type: string
                 x-stoplight:
-                  id: lv45q5qhhkaf3
+                  id: 7fblc7udvwona
             required:
               - description
               - amount
   responses:
     GetPurchaseTransaction:
-      description: GetPurchaseTransaction will return Purchase Transaction details based for given country code
+      description: GetPurchaseTransaction will return Purchase Transaction details based for given country and currency
       content:
         application/json:
           schema:
-            properties:
-              id:
-                type: string
-        application/xml:
-          schema:
             type: object
             properties:
-              transactionId:
-                type: string
-                x-stoplight:
-                  id: 1g6w2fwp1wmpv
               description:
                 type: string
                 x-stoplight:
-                  id: spvzh2pfl2jyo
-              date:
-                type: string
+                  id: r540a53wjxd5v
+              originalPurchasePrice:
+                type: object
                 x-stoplight:
-                  id: 9gnrifw4eqtfu
-              purchaseAmountInUSD:
-                type: string
+                  id: rbj7xjvm02nlj
+                required:
+                  - currency
+                  - amount
+                properties:
+                  currency:
+                    type: string
+                    x-stoplight:
+                      id: pemrc8u1zbaav
+                  amount:
+                    type: string
+                    x-stoplight:
+                      id: jq8tyhvih0m98
+              transaction:
+                type: object
                 x-stoplight:
-                  id: h6p8aichx1q30
-              exchangeRate:
-                type: string
+                  id: 8zkjgb1798g9h
+                required:
+                  - id
+                  - date
+                properties:
+                  id:
+                    type: string
+                    x-stoplight:
+                      id: 765852npp64zt
+                  date:
+                    type: string
+                    x-stoplight:
+                      id: 5aaf56b9od2hz
+              convertedPurchasePrice:
+                type: object
                 x-stoplight:
-                  id: t8rarj5wczm4l
-              amount:
-                type: string
-                x-stoplight:
-                  id: kgusvqn8ekeks
-              countryCode:
-                type: string
-                x-stoplight:
-                  id: 7ae4pfrrztflk
+                  id: tj8b49jm2ylkn
+                required:
+                  - country
+                  - currency
+                  - exchangeRateUsed
+                  - amount
+                  - exchangeRateDate
+                properties:
+                  country:
+                    type: string
+                    x-stoplight:
+                      id: 0w2hx15a8w047
+                  currency:
+                    type: string
+                    x-stoplight:
+                      id: q8jddcboe90jy
+                  exchangeRateUsed:
+                    type: string
+                    x-stoplight:
+                      id: y8xwiifngxv4v
+                  amount:
+                    type: string
+                    x-stoplight:
+                      id: aq21et16ka2bi
+                  exchangeRateDate:
+                    type: string
+                    x-stoplight:
+                      id: 4t1q1eatss72s
             required:
-              - transactionId
               - description
-              - date
-              - purchaseAmountInUSD
-              - exchangeRate
-              - amount
-              - countryCode
+              - originalPurchasePrice
+              - transaction
+              - convertedPurchasePrice

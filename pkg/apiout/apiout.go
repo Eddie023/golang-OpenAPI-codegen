@@ -33,17 +33,22 @@ type ErrorResponse struct {
 
 func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	var er ErrorResponse
+	var aerr *APIError
 	switch {
-	case IsBadRequest(err) || IsApiError(err):
+	case IsBadRequest(err):
+
+		w.WriteHeader(http.StatusBadRequest)
+	case errors.As(err, &aerr):
 		er = ErrorResponse{
 			Error: err.Error(),
 		}
-		w.WriteHeader(http.StatusBadRequest)
+
+		w.WriteHeader(aerr.Status)
 	default:
 		er = ErrorResponse{
 			Error: http.StatusText(http.StatusInternalServerError),
 		}
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	json.NewEncoder(w).Encode(er)

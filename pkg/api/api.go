@@ -19,11 +19,12 @@ import (
 )
 
 type API struct {
-	Config             *config.ApiConfig
-	Swagger            *openapi3.T
-	Db                 ent.Client
-	Logger             *slog.Logger
-	TransactionService TransactionService
+	Config              *config.ApiConfig
+	Swagger             *openapi3.T
+	Db                  ent.Client
+	Logger              *slog.Logger
+	TransactionService  TransactionService
+	ExchangeRateService ExchangeRateService
 }
 
 func (a *API) Handler() http.Handler {

@@ -21,10 +21,7 @@ import (
 // The default time of the server is 1st Jan 2022, 10:00am UTC.
 // This can be overriden by providing a custom clock with the withClock() option.
 func newTestServer(t *testing.T, a *API) http.Handler {
-
 	r := chi.NewRouter()
-
-	r.Use()
 
 	r.Group(func(r chi.Router) {
 		r.Use(httpMiddleware.OapiRequestValidator(a.Swagger))
@@ -36,7 +33,7 @@ func newTestServer(t *testing.T, a *API) http.Handler {
 	return r
 }
 
-func TestTransactionAPI(t *testing.T) {
+func TestPostTransactionAPI(t *testing.T) {
 	type testcase struct {
 		name                    string
 		give                    string
@@ -117,13 +114,14 @@ func TestTransactionAPI(t *testing.T) {
 
 			m := mocks.NewMockTransactionService(ctrl)
 			if tc.mockPurchaseTransaction != nil {
-				m.EXPECT().CreateNewPurchase(gomock.Any(), gomock.Any()).Return(*tc.mockPurchaseTransaction, tc.mockCreateErr).AnyTimes()
+				m.EXPECT().CreateNewPurchaseTransaction(gomock.Any(), gomock.Any()).Return(*tc.mockPurchaseTransaction, tc.mockCreateErr).AnyTimes()
 			}
 
 			swagger, err := types.GetSwagger()
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			// remove any servers from the spec, as we don't know what host or port the user will run the API as.
 			swagger.Servers = nil
 
@@ -161,6 +159,34 @@ func TestTransactionAPI(t *testing.T) {
 			if string(data) != tc.wantBody {
 				t.Errorf("want =%s got =%s", tc.wantBody, string(data))
 			}
+		})
+	}
+
+}
+
+func TestGetTransactionAPI(t *testing.T) {
+	type testcase struct {
+		name string
+		give string
+
+		wantCode int
+		wantBody string
+	}
+
+	testcases := []testcase{
+		{
+			name:     "emtpy body should fail with property missing",
+			give:     `{}`,
+			wantCode: http.StatusBadRequest,
+			wantBody: `property "description" is missing`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
 		})
 	}
 

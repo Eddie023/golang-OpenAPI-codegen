@@ -39,17 +39,17 @@ func (m *MockTransactionService) EXPECT() *MockTransactionServiceMockRecorder {
 	return m.recorder
 }
 
-// CreateNewPurchase mocks base method.
-func (m *MockTransactionService) CreateNewPurchase(arg0 context.Context, arg1 types.CreateNewPurchaseTransaction) (types.Transaction, error) {
+// CreateNewPurchaseTransaction mocks base method.
+func (m *MockTransactionService) CreateNewPurchaseTransaction(arg0 context.Context, arg1 types.CreateNewPurchaseTransaction) (types.Transaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNewPurchase", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateNewPurchaseTransaction", arg0, arg1)
 	ret0, _ := ret[0].(types.Transaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateNewPurchase indicates an expected call of CreateNewPurchase.
-func (mr *MockTransactionServiceMockRecorder) CreateNewPurchase(arg0, arg1 any) *gomock.Call {
+// CreateNewPurchaseTransaction indicates an expected call of CreateNewPurchaseTransaction.
+func (mr *MockTransactionServiceMockRecorder) CreateNewPurchaseTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewPurchase", reflect.TypeOf((*MockTransactionService)(nil).CreateNewPurchase), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewPurchaseTransaction", reflect.TypeOf((*MockTransactionService)(nil).CreateNewPurchaseTransaction), arg0, arg1)
 }
