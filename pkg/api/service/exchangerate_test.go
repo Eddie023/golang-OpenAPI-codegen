@@ -77,12 +77,12 @@ func TestExchangeRateGetter_GetExchangeRate(t *testing.T) {
 				RecordDate:  recordDate,
 			})
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ExchangeRateGetter.GetExchangeRate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("got error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ExchangeRateGetter.GetExchangeRate() = %v, want %v", got, tt.want)
+				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -95,7 +95,7 @@ func TestGetSixMonthBeforePurchaseDate(t *testing.T) {
 		name  string
 	}{
 		{
-			name:  "year should be decremented if necessary",
+			name:  "should successfully decrement year",
 			given: "2023-06-30",
 			want:  "2022-12-30",
 		},

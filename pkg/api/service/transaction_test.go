@@ -13,7 +13,7 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestCreatePurchase(t *testing.T) {
+func TestCreatePurchaseTransaction(t *testing.T) {
 	type testcase struct {
 		name    string
 		payload types.CreateNewPurchaseTransaction
@@ -23,7 +23,7 @@ func TestCreatePurchase(t *testing.T) {
 
 	testcases := []testcase{
 		{
-			name: "Should correctly create new transaction for valid positive amounts",
+			name: "should correctly create new transaction for valid positive amounts",
 			payload: types.CreateNewPurchaseTransaction{
 				Amount:      "123.16",
 				Description: "Positive amount",
@@ -32,7 +32,7 @@ func TestCreatePurchase(t *testing.T) {
 			want:    "123.16",
 		},
 		{
-			name: "Should correctly create new transaction for valid positive amounts",
+			name: "should correctly create new transaction for zero amount",
 			payload: types.CreateNewPurchaseTransaction{
 				Amount:      "0",
 				Description: "Positive amount",
@@ -41,7 +41,7 @@ func TestCreatePurchase(t *testing.T) {
 			want:    "0.00",
 		},
 		{
-			name: "Should faild for negative amount value",
+			name: "should fail for negative amount value",
 			payload: types.CreateNewPurchaseTransaction{
 				Amount:      "-123.123",
 				Description: "This is negative amount",
@@ -50,7 +50,7 @@ func TestCreatePurchase(t *testing.T) {
 			want:    "",
 		},
 		{
-			name: "Should fail for invalid amount value",
+			name: "should fail for invalid amount value",
 			payload: types.CreateNewPurchaseTransaction{
 				Amount:      "-123.123abcd",
 				Description: "Invalid amount",
@@ -96,27 +96,22 @@ func TestRoundToNearestCent(t *testing.T) {
 		want  string
 	}{
 		{
-			name:  "Should not round",
+			name:  "should not round for digit less than 5",
 			given: decimal.NewFromFloat(12.6544),
 			want:  "12.65",
 		},
 		{
-			name:  "Should not round",
+			name:  "Should not round for zero",
 			given: decimal.NewFromFloat(0),
 			want:  "0",
 		},
 		{
-			name:  "Should not round",
+			name:  "Should not round for digit five",
 			given: decimal.NewFromFloat(1.5),
 			want:  "1.5",
 		},
 		{
-			name:  "should not round",
-			given: decimal.NewFromFloat(12.65466),
-			want:  "12.65",
-		},
-		{
-			name:  "should round",
+			name:  "should round for digit greater than five",
 			given: decimal.NewFromFloat(12.65766),
 			want:  "12.66",
 		},
@@ -139,27 +134,27 @@ func TestParseStringToUUID(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid UUID string",
+			name:    "should parse for valid UUID string",
 			given:   "8d8b30af-5b77-4fa0-9270-a85bec6600dd",
 			wantErr: false,
 		},
 		{
-			name:    "valid version 1 UUID string",
+			name:    "should parse for valid version 1 UUID string",
 			given:   "114dec4e-8f91-11ee-b9d1-0242ac120002",
 			wantErr: false,
 		},
 		{
-			name:    "valid version 4 UUID string",
+			name:    "should parse for valid version 4 UUID string",
 			given:   "69802563-9655-42c3-94ff-41537d1f8332",
 			wantErr: false,
 		},
 		{
-			name:    "invalid UUID string with invalid length",
+			name:    "should fail for invalid UUID string with invalid length",
 			given:   "69802563-9655-42c3-94ff-invalid",
 			wantErr: true,
 		},
 		{
-			name:    "invalid UUID string with valid length",
+			name:    "should fail for invalid UUID string with valid length",
 			given:   "69802563-9655-42c3-94ff-41537d1f()^^",
 			wantErr: true,
 		},

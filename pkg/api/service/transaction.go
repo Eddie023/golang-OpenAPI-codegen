@@ -10,6 +10,7 @@ import (
 	"github.com/eddie023/wex-tag/pkg/apiout"
 	"github.com/eddie023/wex-tag/pkg/types"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -23,7 +24,7 @@ func (s *Service) CreateNewPurchaseTransaction(ctx context.Context, payload type
 
 	amount, err := decimal.NewFromString(payload.Amount)
 	if err != nil {
-		return types.Transaction{}, apiout.BadRequest(err.Error())
+		return types.Transaction{}, apiout.BadRequest(errors.Wrap(err, fmt.Sprintf("unable to parse '%s'", payload.Amount)).Error())
 	}
 
 	// we are passing amount type as string for precision. Thus, we need to check for case
@@ -48,6 +49,7 @@ func (s *Service) CreateNewPurchaseTransaction(ctx context.Context, payload type
 	}, nil
 }
 
+// ParseStringToUUID will try to parse the provided string to UUID
 func ParseStringToUUID(s string) (uuid.UUID, error) {
 	return uuid.Parse(s)
 }

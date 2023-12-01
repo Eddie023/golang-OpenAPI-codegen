@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -12,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/eddie023/wex-tag/ent"
 	"github.com/eddie023/wex-tag/internal/build"
 	"github.com/eddie023/wex-tag/pkg/api"
 	"github.com/eddie023/wex-tag/pkg/api/service"
 	"github.com/eddie023/wex-tag/pkg/config"
+	"github.com/eddie023/wex-tag/pkg/db"
 	"github.com/eddie023/wex-tag/pkg/logger"
 	"github.com/eddie023/wex-tag/pkg/types"
 
@@ -46,8 +45,7 @@ func run(slog *slog.Logger) error {
 	slog.Debug("using config", "config", cfg)
 
 	// try to connect to postgres server
-	// fail early if unable to connect to postgres db
-	db, err := ConnectDb(cfg)
+	db, err := db.NewConnection(cfg)
 	if err != nil {
 		slog.Error("unable to connect to db")
 		return err
@@ -63,17 +61,17 @@ func run(slog *slog.Logger) error {
 
 	api := api.API{
 		Config:  cfg,
-		Db:      *db,
+		Db:      *db.Client,
 		Swagger: swagger,
 		Logger:  slog,
 		TransactionService: &service.Service{
-			Ent: db,
+			Ent: db.Client,
 		},
 		ExchangeRateService: &service.ExchangeRateGetter{},
 	}
 
 	server := &http.Server{
-		Addr:    cfg.Web.APIHost,
+		Addr:    cfg.API.Host,
 		Handler: api.Handler(),
 	}
 
@@ -108,7 +106,7 @@ func run(slog *slog.Logger) error {
 	}()
 
 	go func() {
-		slog.Info("server listening on", "port", cfg.Web.APIHost, "host", cfg.Web.APIHost)
+		slog.Info("server listening on", "host", cfg.API.Host)
 
 		err = server.ListenAndServe()
 		if err != nil {
@@ -120,17 +118,4 @@ func run(slog *slog.Logger) error {
 	<-serverCtx.Done()
 
 	return nil
-}
-
-func ConnectDb(cfg *config.ApiConfig) (*ent.Client, error) {
-	connectionURL := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", cfg.Db.Host, cfg.Db.Port, cfg.Db.User, cfg.Db.Dbname, cfg.Db.Password)
-
-	slog.Info("connecting to db", "database", "postgres", "connection-url", connectionURL)
-
-	client, err := ent.Open("postgres", connectionURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }

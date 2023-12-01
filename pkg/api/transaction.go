@@ -45,7 +45,6 @@ func (a *API) GetPurchaseTransaction(w http.ResponseWriter, r *http.Request, tra
 	}
 
 	apiout.JSON(ctx, w, output, http.StatusOK)
-
 }
 
 // POST api/v1/transaction

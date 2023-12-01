@@ -12,12 +12,12 @@ import (
 
 type ApiConfig struct {
 	conf.Version
-	Web struct {
+	API struct {
 		ReadTimeout     time.Duration `conf:"default:5s"`
 		WriteTimeout    time.Duration `conf:"default:10s"`
 		IdleTimeout     time.Duration `conf:"default:120s"`
 		ShutdownTimeout time.Duration `conf:"default:20s"`
-		APIHost         string        `conf:"default:0.0.0.0:8000,env:API_HOST"`
+		Host            string        `conf:"default:0.0.0.0:8000,env:API_HOST"`
 		DebugHost       string        `conf:"default:0.0.0.0:4000"`
 	}
 
