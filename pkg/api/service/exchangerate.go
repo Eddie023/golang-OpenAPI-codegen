@@ -134,7 +134,7 @@ func (e *ExchangeRateGetter) ConvertCurrency(payload ExchangeRatePayload, trans 
 			Id:          trans.ID.String(),
 		},
 		ConvertedDetails: types.ConvertedPurchasePrice{
-			Amount:           convertedAmount.String(),
+			Amount:           RoundToNearestCent(convertedAmount).String(),
 			Country:          country,
 			Currency:         currency,
 			ExchangeRateUsed: er.ExchangeRate,
