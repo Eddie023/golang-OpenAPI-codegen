@@ -24,7 +24,7 @@ API: GET {BASE_URL}/purchase/ae90db91-d278-4941-b2b0-92e3b6f666e2?country=Nepal&
 
 Response: {
     "convertedDetails": {
-        "amount": "8.26608",
+        "amount": "8.26",
         "country": "'United Kingdom",
         "currency": "Pound",
         "exchangeRateDate": "2023-09-30",
