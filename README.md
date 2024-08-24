@@ -1,4 +1,4 @@
-# golang-OpenAPI-codegen
+# opinionated-go-api
 
 A toy application for a random Job Application. See [REQUIREMENTS.md](REQUIREMENTS.md). Contains a very opinionated approach to API development in Golang using oapi-codegen for types generation to entgo for ORM framework. 
 
