@@ -1,6 +1,6 @@
 # golang-OpenAPI-codegen
 
-A toy application for a random Job Application. See [REQUIREMENTS.md](REQUIREMENTS.md)
+A toy application for a random Job Application. See [REQUIREMENTS.md](REQUIREMENTS.md). Contains a very opinionated approach to API development in Golang using oapi-codegen for types generation to entgo for ORM framework. 
 
 The service exposes APIs to Store a Purchase Transaction and Retrieve a Purchase Transaction in a Specified Countyr's Currency. 
 
